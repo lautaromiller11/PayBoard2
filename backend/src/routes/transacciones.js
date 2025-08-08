@@ -8,19 +8,67 @@ const router = express.Router();
 router.use(authenticateJWT);
 
 // Categorías disponibles
-const CATEGORIAS_VALIDAS = ['Servicios', 'Hogar', 'Impuestos', 'Salud', 'Educacion'];
+const CATEGORIAS_GASTOS = [
+  'Servicios',
+  'Hogar',
+  'Impuestos',
+  'Salud',
+  'Educación',
+  'Alimentación',
+  'Transporte',
+  'Ocio y entretenimiento',
+  'Trabajo y negocios',
+  'Tecnología y electrónica',
+  'Ropa y accesorios',
+  'Viajes y vacaciones',
+  'Ahorros e inversiones',
+  'Deudas y préstamos',
+  'Donaciones y caridad',
+  'Seguros',
+  'Cuidado personal y belleza',
+  'Mascotas',
+  'Mantenimiento y reparaciones',
+  'Facturas y suscripciones',
+  'Regalos y celebraciones',
+  'Otros'
+];
+
+const CATEGORIAS_INGRESOS = [
+  'Sueldo y salario',
+  'Bonificaciones y comisiones',
+  'Negocios propios',
+  'Freelance o trabajos independientes',
+  'Inversiones (dividendos, intereses)',
+  'Alquileres recibidos',
+  'Venta de bienes',
+  'Regalos y herencias',
+  'Reembolsos',
+  'Subsidios y ayudas',
+  'Otros ingresos'
+];
+
+const CATEGORIAS_VALIDAS = Array.from(new Set([...CATEGORIAS_GASTOS, ...CATEGORIAS_INGRESOS]));
+
+function categoriaValidaParaTipo(tipo, categoria) {
+  if (tipo === 'gasto') return CATEGORIAS_GASTOS.includes(categoria);
+  if (tipo === 'ingreso') return CATEGORIAS_INGRESOS.includes(categoria);
+  return false;
+}
 
 // GET /api/transacciones - obtener transacciones del usuario
 router.get('/', async (req, res) => {
   try {
-    const { mes, año, tipo } = req.query;
+    const { mes, tipo } = req.query;
+    const anio = req.query.anio || req.query['año'];
     
     let whereClause = { userId: req.user.id };
     
     // Filtrar por mes y año si se proporcionan
-    if (mes && año) {
-      const startDate = new Date(parseInt(año), parseInt(mes) - 1, 1);
-      const endDate = new Date(parseInt(año), parseInt(mes), 0, 23, 59, 59);
+    if (mes && anio) {
+      const parsedAnio = parseInt(anio);
+      const parsedMes = parseInt(mes);
+      const startDate = new Date(parsedAnio, parsedMes - 1, 1);
+      const endDate = new Date(parsedAnio, parsedMes, 0, 23, 59, 59);
       
       whereClause.fecha = {
         gte: startDate,
@@ -64,6 +112,12 @@ router.post('/', async (req, res) => {
     if (!CATEGORIAS_VALIDAS.includes(categoria)) {
       return res.status(400).json({ 
         error: `La categoría debe ser una de: ${CATEGORIAS_VALIDAS.join(', ')}` 
+      });
+    }
+
+    if (!categoriaValidaParaTipo(tipo, categoria)) {
+      return res.status(400).json({ 
+        error: `La categoría "${categoria}" no es válida para el tipo "${tipo}"` 
       });
     }
     
@@ -145,6 +199,12 @@ router.put('/:id', async (req, res) => {
         error: `La categoría debe ser una de: ${CATEGORIAS_VALIDAS.join(', ')}` 
       });
     }
+
+    if (tipo && categoria && !categoriaValidaParaTipo(tipo, categoria)) {
+      return res.status(400).json({ 
+        error: `La categoría "${categoria}" no es válida para el tipo "${tipo}"` 
+      });
+    }
     
     if (periodicidad && periodicidad !== 'unico' && periodicidad !== 'mensual') {
       return res.status(400).json({ error: 'La periodicidad debe ser "unico" o "mensual"' });
@@ -204,14 +264,14 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-// GET /api/transacciones/resumen/:año/:mes - obtener resumen mensual
-router.get('/resumen/:año/:mes', async (req, res) => {
+// GET /api/transacciones/resumen/:anio/:mes - obtener resumen mensual (usar ASCII en params)
+router.get('/resumen/:anio/:mes', async (req, res) => {
   try {
-    const año = parseInt(req.params.año, 10);
+    const anio = parseInt(req.params.anio, 10);
     const mes = parseInt(req.params.mes, 10);
     
-    const startDate = new Date(año, mes - 1, 1);
-    const endDate = new Date(año, mes, 0, 23, 59, 59);
+    const startDate = new Date(anio, mes - 1, 1);
+    const endDate = new Date(anio, mes, 0, 23, 59, 59);
     
     const transacciones = await prisma.transaccion.findMany({
       where: {
@@ -261,10 +321,51 @@ router.get('/resumen/:año/:mes', async (req, res) => {
     return res.status(500).json({ error: 'Server error' });
   }
 });
+// GET /api/transacciones/resumen/:anio/:mes - obtener resumen mensual (usar ASCII en params)
+router.get('/resumen/:anio/:mes', async (req, res) => {
+  try {
+    const anio = parseInt(req.params.anio, 10);
+    const mes = parseInt(req.params.mes, 10);
 
-// GET /api/transacciones/categorias - obtener categorías disponibles
+    const startDate = new Date(anio, mes - 1, 1);
+    const endDate = new Date(anio, mes, 0, 23, 59, 59);
+
+    const transacciones = await prisma.transaccion.findMany({
+      where: {
+        userId: req.user.id,
+        fecha: { gte: startDate, lte: endDate }
+      }
+    });
+
+    const ingresos = transacciones.filter(t => t.tipo === 'ingreso')
+      .reduce((sum, t) => sum + parseFloat(t.monto), 0);
+    const gastos = transacciones.filter(t => t.tipo === 'gasto')
+      .reduce((sum, t) => sum + parseFloat(t.monto), 0);
+
+    const porCategoria = transacciones.reduce((acc, t) => {
+      if (!acc[t.categoria]) acc[t.categoria] = { ingresos: 0, gastos: 0 };
+      if (t.tipo === 'ingreso') acc[t.categoria].ingresos += parseFloat(t.monto);
+      else acc[t.categoria].gastos += parseFloat(t.monto);
+      return acc;
+    }, {});
+
+    return res.json({
+      totales: { ingresos, gastos, balance: ingresos - gastos },
+      porCategoria,
+      transacciones: transacciones.length
+    });
+  } catch (err) {
+    console.error('Error getting resumen:', err);
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// GET /api/transacciones/categorias - obtener categorías disponibles (por tipo o todas)
 router.get('/categorias', (req, res) => {
-  return res.json(CATEGORIAS_VALIDAS);
+  const tipo = (req.query.tipo || '').toString()
+  if (tipo === 'ingreso') return res.json(CATEGORIAS_INGRESOS)
+  if (tipo === 'gasto') return res.json(CATEGORIAS_GASTOS)
+  return res.json(CATEGORIAS_VALIDAS)
 });
 
 module.exports = router;

@@ -1,39 +1,49 @@
 import { useState, useEffect } from 'react'
+import { useSync } from '../context/SyncContext'
 import Layout from '../components/Layout'
 import TransactionForm from '../ui/TransactionForm'
 import TransactionList from '../ui/TransactionList'
 import FinancialChart from '../ui/FinancialChart'
-import { 
-  fetchTransacciones, 
-  fetchResumenFinanciero, 
-  Transaccion, 
-  ResumenFinanciero 
+import {
+  fetchTransacciones,
+  fetchResumenFinanciero,
+  Transaccion,
+  ResumenFinanciero
 } from '../lib/api'
 
 export default function FinanzasPersonales() {
+  const { finanzasNeedsSync, resetFinanzasSync } = useSync();
   const [transacciones, setTransacciones] = useState<Transaccion[]>([])
   const [resumen, setResumen] = useState<ResumenFinanciero | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  
+
   // Estados para modales
   const [modalIngresoOpen, setModalIngresoOpen] = useState(false)
   const [modalGastoOpen, setModalGastoOpen] = useState(false)
-  
+
   // Estados para filtros
   const [filtroTipo, setFiltroTipo] = useState<'todos' | 'ingreso' | 'gasto'>('todos')
   const [mesSeleccionado, setMesSeleccionado] = useState(() => {
-    const now = new Date()
-    return `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}`
-  })
+    const fecha = new Date();
+    return `${fecha.getFullYear()}-${(fecha.getMonth() + 1).toString().padStart(2, '0')}`;
+  });
 
   // Obtener año y mes del filtro seleccionado
   const [año, mes] = mesSeleccionado.split('-').map(Number)
 
   // Cargar datos al montar el componente y cuando cambien los filtros
   useEffect(() => {
-    loadData()
-  }, [mes, año, filtroTipo])
+    loadData();
+  }, [mes, año, filtroTipo]);
+
+  // Sincronizar cuando se edita/paga/elimina un servicio
+  useEffect(() => {
+    if (finanzasNeedsSync) {
+      loadData();
+      resetFinanzasSync();
+    }
+  }, [finanzasNeedsSync]);
 
   const loadData = async () => {
     try {
@@ -71,9 +81,9 @@ export default function FinanzasPersonales() {
   }
 
   // Formatear nombre del mes
-  const nombreMes = new Date(año, mes - 1).toLocaleDateString('es-ES', { 
-    month: 'long', 
-    year: 'numeric' 
+  const nombreMes = new Date(año, mes - 1).toLocaleDateString('es-ES', {
+    month: 'long',
+    year: 'numeric'
   })
 
   if (loading) {
@@ -163,23 +173,23 @@ export default function FinanzasPersonales() {
 
         {/* Lista de transacciones */}
         <div className="mb-6">
-          <TransactionList 
+          <TransactionList
             transacciones={transacciones}
             onTransaccionDeleted={handleTransaccionDeleted}
             loading={loading}
           />
         </div>
 
-        {/* Nota informativa */}
+        Nota informativa
         <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
           <div className="flex items-start">
             <div className="w-5 h-5 bg-blue-500 rounded-full mt-0.5 mr-3 flex-shrink-0"></div>
             <div>
               <h3 className="font-medium text-blue-900 mb-1">Funcionalidades disponibles</h3>
               <p className="text-sm text-blue-700">
-                • Registro completo de ingresos y gastos con periodicidad<br/>
-                • Gráficos comparativos y análisis por categorías<br/>
-                • Transacciones mensuales automáticas<br/>
+                • Registro completo de ingresos y gastos con periodicidad<br />
+                • Gráficos comparativos y análisis por categorías<br />
+                • Transacciones mensuales automáticas<br />
                 • Próximamente: integración automática con servicios pagados
               </p>
             </div>

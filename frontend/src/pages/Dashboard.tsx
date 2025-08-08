@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { changeEstado, createPago, deleteServicio, fetchServicios, Servicio } from '../lib/api'
 import { useAuth } from '../context/AuthContext'
 import ServiceForm from '../ui/ServiceForm'
+import ConfirmDeleteModal from '../components/ConfirmDeleteModal'
 import FinancePanel from '../ui/FinancePanel'
 
 type ColumnKey = 'por_pagar' | 'pagado' | 'vencido'
@@ -13,6 +14,8 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
+  const [deleteId, setDeleteId] = useState<number | null>(null)
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
 
   const grouped = useMemo(() => ({
     por_pagar: servicios.filter(s => s.estado === 'por_pagar'),
@@ -49,9 +52,22 @@ export default function Dashboard() {
     }
   }
 
-  const onDelete = async (id: number) => {
-    await deleteServicio(id)
-    setServicios(prev => prev.filter(s => s.id !== id))
+  const handleDeleteClick = (id: number) => {
+    setDeleteId(id)
+    setDeleteModalOpen(true)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (deleteId == null) return
+    await deleteServicio(deleteId)
+    setServicios(prev => prev.filter(s => s.id !== deleteId))
+    setDeleteModalOpen(false)
+    setDeleteId(null)
+  }
+
+  const handleDeleteCancel = () => {
+    setDeleteModalOpen(false)
+    setDeleteId(null)
   }
 
   const onPay = async (s: Servicio) => {
@@ -83,11 +99,11 @@ export default function Dashboard() {
               <div className="bg-white rounded-xl shadow p-4">
                 <DragDropContext onDragEnd={onDragEnd}>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {(['por_pagar','pagado','vencido'] as ColumnKey[]).map(col => (
+                    {(['por_pagar', 'pagado', 'vencido'] as ColumnKey[]).map(col => (
                       <Droppable droppableId={col} key={col}>
                         {(provided) => (
                           <div ref={provided.innerRef} {...provided.droppableProps} className="bg-gray-100 rounded-lg p-3 min-h-[240px]">
-                            <h3 className="font-semibold mb-2 capitalize">{col.replace('_',' ')}</h3>
+                            <h3 className="font-semibold mb-2 capitalize">{col.replace('_', ' ')}</h3>
                             {grouped[col].map((s, index) => (
                               <Draggable draggableId={String(s.id)} index={index} key={s.id}>
                                 {(dragProvided) => (
@@ -98,7 +114,7 @@ export default function Dashboard() {
                                       {s.estado !== 'pagado' && (
                                         <button onClick={() => onPay(s)} className="px-3 py-1 text-sm rounded bg-blue-600 text-white">Pagar</button>
                                       )}
-                                      <button onClick={() => onDelete(s.id)} className="px-3 py-1 text-sm rounded bg-gray-200">Eliminar</button>
+                                      <button onClick={() => handleDeleteClick(s.id)} className="px-3 py-1 text-sm rounded bg-gray-200">Eliminar</button>
                                     </div>
                                   </div>
                                 )}
@@ -120,6 +136,15 @@ export default function Dashboard() {
         )}
       </div>
 
+      {deleteModalOpen && (
+        <ConfirmDeleteModal
+          open={deleteModalOpen}
+          title="¿Eliminar servicio?"
+          description="Esta acción no se puede deshacer. ¿Deseas eliminar este servicio?"
+          onConfirm={handleDeleteConfirm}
+          onCancel={handleDeleteCancel}
+        />
+      )}
       {modalOpen && (
         <ServiceForm onClose={() => setModalOpen(false)} onCreated={(s) => setServicios(prev => [s, ...prev])} />
       )}

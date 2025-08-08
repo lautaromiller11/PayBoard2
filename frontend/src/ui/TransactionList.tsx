@@ -1,4 +1,6 @@
 import { Transaccion, deleteTransaccion } from '../lib/api'
+import React, { useState } from 'react';
+import ConfirmDeleteModal from '../components/ConfirmDeleteModal'
 
 interface TransactionListProps {
   transacciones: Transaccion[]
@@ -7,20 +9,32 @@ interface TransactionListProps {
 }
 
 export default function TransactionList({ transacciones, onTransaccionDeleted, loading = false }: TransactionListProps) {
-  
-  const handleDelete = async (id: number) => {
-    if (!confirm('¿Estás seguro de que quieres eliminar esta transacción?')) {
-      return
-    }
 
-    try {
-      await deleteTransaccion(id)
-      onTransaccionDeleted(id)
-    } catch (error) {
-      console.error('Error deleting transaction:', error)
-      // Aquí podrías mostrar una notificación de error
-    }
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState<number | null>(null);
+
+  function handleDeleteClick(id: number) {
+    setDeleteId(id);
+    setDeleteModalOpen(true);
   }
+
+  const handleDeleteConfirm = async () => {
+    if (deleteId == null) return;
+    try {
+      await deleteTransaccion(deleteId);
+      onTransaccionDeleted(deleteId);
+    } catch (error) {
+      console.error('Error deleting transaction:', error);
+    } finally {
+      setDeleteModalOpen(false);
+      setDeleteId(null);
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteModalOpen(false);
+    setDeleteId(null);
+  };
 
   const formatCurrency = (amount: string | number) => {
     const num = typeof amount === 'string' ? parseFloat(amount) : amount
@@ -40,7 +54,19 @@ export default function TransactionList({ transacciones, onTransaccionDeleted, l
   }
 
   const getTipoIcon = (tipo: string) => {
-    return tipo === 'ingreso' ? '↗️' : '↙️'
+    if (tipo === 'ingreso') {
+      return (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 19V5M12 5L6 11M12 5L18 11" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      );
+    } else {
+      return (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 5v14M12 19l-6-6M12 19l6-6" stroke="#ef4444" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      );
+    }
   }
 
   const getTipoColor = (tipo: string) => {
@@ -67,7 +93,7 @@ export default function TransactionList({ transacciones, onTransaccionDeleted, l
           Transacciones ({transacciones.length})
         </h2>
       </div>
-      
+
       <div className="divide-y max-h-96 overflow-y-auto">
         {transacciones.length === 0 ? (
           <div className="p-8 text-center text-gray-500">
@@ -83,7 +109,7 @@ export default function TransactionList({ transacciones, onTransaccionDeleted, l
                   <div className="text-xl">
                     {getTipoIcon(transaccion.tipo)}
                   </div>
-                  
+
                   {/* Información principal */}
                   <div className="flex-1">
                     <div className="font-medium text-gray-900">
@@ -104,16 +130,16 @@ export default function TransactionList({ transacciones, onTransaccionDeleted, l
                     </div>
                   </div>
                 </div>
-                
+
                 {/* Monto y acciones */}
                 <div className="flex items-center space-x-3">
                   <div className={`text-lg font-semibold ${getTipoColor(transaccion.tipo)}`}>
                     {transaccion.tipo === 'ingreso' ? '+' : '-'}{formatCurrency(transaccion.monto)}
                   </div>
-                  
+
                   {/* Botón eliminar */}
                   <button
-                    onClick={() => handleDelete(transaccion.id)}
+                    onClick={() => handleDeleteClick(transaccion.id)}
                     className="text-gray-400 hover:text-red-600 transition-colors p-1"
                     title="Eliminar transacción"
                   >
@@ -127,6 +153,15 @@ export default function TransactionList({ transacciones, onTransaccionDeleted, l
           ))
         )}
       </div>
+      {deleteModalOpen && (
+        <ConfirmDeleteModal
+          open={deleteModalOpen}
+          title="¿Está seguro que desea eliminar la transacción?"
+          description="Esta acción no se puede deshacer."
+          onConfirm={handleDeleteConfirm}
+          onCancel={handleDeleteCancel}
+        />
+      )}
     </div>
   )
 }
