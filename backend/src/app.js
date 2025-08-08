@@ -1,0 +1,35 @@
+const express = require('express');
+const cors = require('cors');
+const morgan = require('morgan');
+
+const authRoutes = require('./routes/auth');
+const serviciosRoutes = require('./routes/servicios');
+const pagosRoutes = require('./routes/pagos');
+const transaccionesRoutes = require('./routes/transacciones');
+
+const app = express();
+
+// Global middleware
+app.use(cors());
+app.use(express.json());
+app.use(morgan('dev'));
+
+// Health check
+app.get('/api/health', (req, res) => {
+  res.json({ ok: true, service: 'pricecalc-backend' });
+});
+
+// Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/servicios', serviciosRoutes);
+app.use('/api/pagos', pagosRoutes);
+app.use('/api/transacciones', transaccionesRoutes);
+
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({ error: 'Not found' });
+});
+
+module.exports = app;
+
+
