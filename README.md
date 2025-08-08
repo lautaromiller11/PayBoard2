@@ -1,4 +1,4 @@
-﻿# PriceCalc - Gestión de Servicios y Pagos
+﻿# PayBoard - Gestión de Servicios y Pagos
 
 Una aplicación web moderna para gestionar servicios recurrentes y sus pagos, construida con React + TypeScript en el frontend y Express + Prisma en el backend.
 
