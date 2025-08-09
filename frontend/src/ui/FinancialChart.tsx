@@ -8,7 +8,7 @@ interface FinancialChartProps {
 }
 
 export default function FinancialChart({ resumen, mes, año }: FinancialChartProps) {
-  
+
   // Datos para el gráfico de barras (comparación general)
   const datosComparacion = [
     {
@@ -17,7 +17,7 @@ export default function FinancialChart({ resumen, mes, año }: FinancialChartPro
       color: '#10B981'
     },
     {
-      name: 'Gastos', 
+      name: 'Gastos',
       monto: resumen.totales.gastos,
       color: '#EF4444'
     }
@@ -55,11 +55,7 @@ export default function FinancialChart({ resumen, mes, año }: FinancialChartPro
   return (
     <div className="space-y-6">
       {/* Título */}
-      <div className="text-center">
-        <h3 className="text-xl font-semibold text-gray-900 capitalize">
-          Análisis Financiero - {nombreMes} {año}
-        </h3>
-      </div>
+  {/* Título eliminado */}
 
       {/* Gráfico de comparación general */}
       <div className="bg-white p-6 rounded-lg shadow-sm border">
@@ -88,8 +84,8 @@ export default function FinancialChart({ resumen, mes, año }: FinancialChartPro
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={datosPorCategoria} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  dataKey="categoria" 
+                <XAxis
+                  dataKey="categoria"
                   angle={-45}
                   textAnchor="end"
                   height={80}
@@ -130,44 +126,7 @@ export default function FinancialChart({ resumen, mes, año }: FinancialChartPro
         </div>
       )}
 
-      {/* Resumen textual */}
-      <div className="bg-white p-6 rounded-lg shadow-sm border">
-        <h4 className="text-lg font-medium text-gray-900 mb-4">Resumen del Mes</h4>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-          <div className="p-4 bg-green-50 rounded-lg">
-            <div className="text-2xl font-bold text-green-600">
-              {formatCurrency(resumen.totales.ingresos)}
-            </div>
-            <div className="text-sm text-green-700">Total Ingresos</div>
-          </div>
-          
-          <div className="p-4 bg-red-50 rounded-lg">
-            <div className="text-2xl font-bold text-red-600">
-              {formatCurrency(resumen.totales.gastos)}
-            </div>
-            <div className="text-sm text-red-700">Total Gastos</div>
-          </div>
-          
-          <div className={`p-4 rounded-lg ${resumen.totales.balance >= 0 ? 'bg-blue-50' : 'bg-orange-50'}`}>
-            <div className={`text-2xl font-bold ${resumen.totales.balance >= 0 ? 'text-blue-600' : 'text-orange-600'}`}>
-              {formatCurrency(resumen.totales.balance)}
-            </div>
-            <div className={`text-sm ${resumen.totales.balance >= 0 ? 'text-blue-700' : 'text-orange-700'}`}>
-              Balance {resumen.totales.balance >= 0 ? 'Positivo' : 'Negativo'}
-            </div>
-          </div>
-        </div>
-        
-        {/* Mensaje motivacional */}
-        <div className="mt-4 p-3 bg-gray-50 rounded-lg text-center">
-          <div className="text-sm text-gray-600">
-            {resumen.totales.balance >= 0 
-              ? '¡Excelente! Tienes un balance positivo este mes. 💰'
-              : 'Considera revisar tus gastos para mejorar tu balance. 📊'
-            }
-          </div>
-        </div>
-      </div>
+      {/* Resumen textual eliminado, solo se muestra el gráfico */}
     </div>
   )
 }

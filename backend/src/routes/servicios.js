@@ -14,22 +14,39 @@ router.delete('/:id', async (req, res) => {
   try {
     const id = parseInt(req.params.id, 10);
     const service = await prisma.servicio.findUnique({ where: { id } });
-    if (!service || service.userId !== req.user.id) {
+    if (!service) {
       return res.status(404).json({ error: 'Servicio not found' });
     }
-    // Eliminar transacciones asociadas
-    await prisma.transaccion.deleteMany({
-      where: {
-        tipo: 'gasto',
-        descripcion: `Pago de servicio: ${service.nombre}`,
-        userId: req.user.id
-      }
-    });
-    await prisma.servicio.delete({ where: { id } });
-    return res.json({ ok: true });
+    if (service.userId !== req.user.id) {
+      return res.status(403).json({ error: 'No tienes permiso para eliminar este servicio' });
+    }
+    try {
+      // Eliminar todos los pagos relacionados
+      await prisma.pago.deleteMany({
+        where: {
+          servicioId: id
+        }
+      });
+      // Eliminar transacciones relacionadas por descripcion y userId
+      await prisma.transaccion.deleteMany({
+        where: {
+          tipo: 'gasto',
+          descripcion: {
+            contains: `Pago de servicio:`
+          },
+          userId: req.user.id
+        }
+      });
+      // Finalmente eliminar el servicio
+      await prisma.servicio.delete({ where: { id } });
+      return res.json({ ok: true });
+    } catch (dbErr) {
+      console.error('Error eliminando en DB:', dbErr);
+      return res.status(500).json({ error: 'Error eliminando en base de datos', detalle: dbErr?.message || dbErr });
+    }
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: 'Server error' });
+    console.error('Error general en DELETE /servicios/:id:', err);
+    return res.status(500).json({ error: 'Server error', detalle: err?.message || err });
   }
 });
 

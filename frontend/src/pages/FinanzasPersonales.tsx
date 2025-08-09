@@ -117,9 +117,7 @@ export default function FinanzasPersonales() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Finanzas Personales</h1>
-            <p className="text-gray-600 mt-1 capitalize">
-              Control financiero - {nombreMes}
-            </p>
+            {/* Eliminado: Control financiero - {nombreMes} */}
           </div>
           <div className="flex gap-3">
             <button
@@ -164,37 +162,64 @@ export default function FinanzasPersonales() {
           </div>
         </div>
 
-        {/* Resumen financiero con gráficos */}
+        {/* Resumen del mes y debajo historial de transacciones */}
         {resumen && (
           <div className="mb-6">
+            {/* Título de análisis financiero arriba del resumen del mes */}
+            <div className="text-center mb-4">
+              <h3 className="text-xl font-semibold text-gray-900 capitalize">
+                Análisis Financiero - {new Date(año, mes - 1).toLocaleDateString('es-ES', { month: 'long' })} {año}
+              </h3>
+            </div>
+            {/* Resumen textual */}
+            <div className="bg-white p-6 rounded-lg shadow-sm border mb-6">
+              <h4 className="text-lg font-medium text-gray-900 mb-4">Resumen del Mes</h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                <div className="p-4 bg-green-50 rounded-lg">
+                  <div className="text-2xl font-bold text-green-600">
+                    {resumen.totales && resumen.totales.ingresos !== undefined ? resumen.totales.ingresos.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' }) : 0}
+                  </div>
+                  <div className="text-sm text-green-700">Total Ingresos</div>
+                </div>
+                <div className="p-4 bg-red-50 rounded-lg">
+                  <div className="text-2xl font-bold text-red-600">
+                    {resumen.totales && resumen.totales.gastos !== undefined ? resumen.totales.gastos.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' }) : 0}
+                  </div>
+                  <div className="text-sm text-red-700">Total Gastos</div>
+                </div>
+                <div className={`p-4 rounded-lg ${resumen.totales.balance >= 0 ? 'bg-blue-50' : 'bg-orange-50'}`}>
+                  <div className={`text-2xl font-bold ${resumen.totales.balance >= 0 ? 'text-blue-600' : 'text-orange-600'}`}>
+                    {resumen.totales && resumen.totales.balance !== undefined ? resumen.totales.balance.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' }) : 0}
+                  </div>
+                  <div className={`text-sm ${resumen.totales.balance >= 0 ? 'text-blue-700' : 'text-orange-700'}`}>
+                    Balance {resumen.totales.balance >= 0 ? 'Positivo' : 'Negativo'}
+                  </div>
+                </div>
+              </div>
+              {/* Mensaje motivacional */}
+              <div className="mt-4 p-3 bg-gray-50 rounded-lg text-center">
+                <div className="text-sm text-gray-600">
+                  {resumen.totales.balance >= 0
+                    ? '¡Excelente! Tienes un balance positivo este mes. 💰'
+                    : 'Considera revisar tus gastos para mejorar tu balance. 📊'
+                  }
+                </div>
+              </div>
+            </div>
+            {/* Historial de transacciones debajo del resumen */}
+            <div className="mb-6">
+              <TransactionList
+                transacciones={transacciones}
+                onTransaccionDeleted={handleTransaccionDeleted}
+                loading={loading}
+              />
+            </div>
+            {/* Gráfico ingresos vs gastos */}
             <FinancialChart resumen={resumen} mes={mes} año={año} />
           </div>
         )}
 
-        {/* Lista de transacciones */}
-        <div className="mb-6">
-          <TransactionList
-            transacciones={transacciones}
-            onTransaccionDeleted={handleTransaccionDeleted}
-            loading={loading}
-          />
-        </div>
-
-        Nota informativa
-        <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <div className="flex items-start">
-            <div className="w-5 h-5 bg-blue-500 rounded-full mt-0.5 mr-3 flex-shrink-0"></div>
-            <div>
-              <h3 className="font-medium text-blue-900 mb-1">Funcionalidades disponibles</h3>
-              <p className="text-sm text-blue-700">
-                • Registro completo de ingresos y gastos con periodicidad<br />
-                • Gráficos comparativos y análisis por categorías<br />
-                • Transacciones mensuales automáticas<br />
-                • Próximamente: integración automática con servicios pagados
-              </p>
-            </div>
-          </div>
-        </div>
+        {/* Nota informativa eliminada */}
       </div>
 
       {/* Modales para crear transacciones */}
