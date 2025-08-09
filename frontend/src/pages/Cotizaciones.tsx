@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import CotizacionCard from '../components/CotizacionCard';
 import Layout from '../components/Layout';
 import { useAuth } from '../context/AuthContext';
+import { fetchCotizacionesPreferidas, saveCotizacionesPreferidas } from '../lib/api';
 
 export type Cotizacion = {
     id: string;
@@ -173,33 +174,52 @@ const Cotizaciones: React.FC = () => {
         return () => { mounted = false; clearInterval(interval); };
     }, [cotizaciones.length]);
 
-    // Hidratar selección inicial desde localStorage una vez por usuario cuando ya hay disponibles
+    // Hidratar selección inicial: primero backend (si hay user), sino localStorage
     useEffect(() => {
-        if (!user || hydrated === true || disponibles.length === 0) return;
-        try {
-            const key = `cotizaciones:${user.id}`;
-            const raw = localStorage.getItem(key);
-            if (raw) {
-                const ids: string[] = JSON.parse(raw);
+        if (hydrated || disponibles.length === 0) return;
+        (async () => {
+            let ids: string[] = [];
+            const key = user ? `cotizaciones:${user.id}` : null;
+            try {
+                if (user) {
+                    ids = await fetchCotizacionesPreferidas();
+                } else if (key) {
+                    // no-op
+                }
+            } catch {
+                // fallback a localStorage
+                if (key) {
+                    try {
+                        const raw = localStorage.getItem(key);
+                        ids = raw ? JSON.parse(raw) : [];
+                    } catch { ids = []; }
+                }
+            }
+            if (ids.length > 0) {
                 const seleccionadas = ids
                     .map(id => disponibles.find(d => d.id === id))
                     .filter((x): x is Cotizacion => Boolean(x));
-                if (seleccionadas.length > 0) {
-                    setCotizaciones(seleccionadas);
-                }
+                if (seleccionadas.length > 0) setCotizaciones(seleccionadas);
             }
-        } catch {}
-        setHydrated(true);
+            setHydrated(true);
+        })();
     }, [user, disponibles, hydrated]);
 
-    // Guardar selección al cambiar para el usuario actual
+    // Guardar selección al cambiar para el usuario actual (backend + fallback local)
     useEffect(() => {
         if (!user) return;
-        try {
-            const key = `cotizaciones:${user.id}`;
-            const ids = cotizaciones.map(c => c.id);
-            localStorage.setItem(key, JSON.stringify(ids));
-        } catch {}
+        const key = `cotizaciones:${user.id}`;
+        const ids = cotizaciones.map(c => c.id);
+        // Guardar local inmediatamente por UX
+        try { localStorage.setItem(key, JSON.stringify(ids)); } catch {}
+        // Intentar persistir en backend
+        (async () => {
+            try {
+                await saveCotizacionesPreferidas(ids);
+            } catch {
+                // fallback silencioso
+            }
+        })();
     }, [user, cotizaciones]);
 
     // Agregar cotización
