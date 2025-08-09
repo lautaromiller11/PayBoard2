@@ -5,7 +5,6 @@ import Servicios from './pages/Servicios'
 import FinanzasPersonales from './pages/FinanzasPersonales'
 import Cotizaciones from './pages/Cotizaciones'
 import Home from './pages/Home'
-import Perfil from './pages/Perfil'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { SyncProvider } from './context/SyncContext'
 
@@ -45,14 +44,6 @@ export default function App() {
             element={
               <PrivateRoute>
                 <Cotizaciones />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/perfil"
-            element={
-              <PrivateRoute>
-                <Perfil />
               </PrivateRoute>
             }
           />

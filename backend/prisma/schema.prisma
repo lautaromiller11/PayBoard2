@@ -16,8 +16,7 @@ model User {
   createdAt    DateTime      @default(now())
   servicios    Servicio[]
   transacciones Transaccion[]
-  phoneNumber String?   // Número de teléfono para alertas
-  whatsappAlertsEnabled Boolean @default(false) // Preferencia de alerta
+  cotizacionesSeleccionadas String? // <-- Nuevo campo (puedes usar JSON.stringify)
 }
 
 model Servicio {
