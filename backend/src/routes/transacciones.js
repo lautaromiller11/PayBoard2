@@ -1,11 +1,11 @@
 const express = require('express');
 const prisma = require('../config/prisma');
-const { authenticateJWT, ensureUserExists } = require('../middleware/auth');
+const { authenticateJWT } = require('../middleware/auth');
 
 const router = express.Router();
 
 // Proteger todas las rutas
-router.use(authenticateJWT, ensureUserExists);
+router.use(authenticateJWT);
 
 // Categorías disponibles
 const CATEGORIAS_GASTOS = [
