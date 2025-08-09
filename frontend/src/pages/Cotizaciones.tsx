@@ -16,41 +16,65 @@ export type Cotizacion = {
 
 // Obtiene todas las cotizaciones de dólar desde DolarApi.com
 async function fetchCotizaciones(): Promise<Cotizacion[]> {
-    // Fetch dólares
-    const resDolar = await fetch('https://dolarapi.com/v1/dolares');
-    const dataDolar = await resDolar.json();
-    // Fetch euros
-    const resEuro = await fetch('https://dolarapi.com/v1/euro');
-    const dataEuro = await resEuro.json();
-    // Fetch reales
-    const resReal = await fetch('https://dolarapi.com/v1/real');
-    const dataReal = await resReal.json();
+    // Realiza las solicitudes en paralelo y maneja errores HTTP por endpoint
+    const [resDolar, resEuro, resReal] = await Promise.all([
+        fetch('https://dolarapi.com/v1/dolares'),
+        fetch('https://dolarapi.com/v1/cotizaciones/eur'),
+        fetch('https://dolarapi.com/v1/cotizaciones/brl'),
+    ]);
+
+    let dataDolar: any[] = [];
+    let dataEuro: any | null = null;
+    let dataReal: any | null = null;
+
+    try {
+        if (resDolar.ok) {
+            dataDolar = await resDolar.json();
+        }
+    } catch {}
+
+    try {
+        if (resEuro.ok) {
+            dataEuro = await resEuro.json();
+        }
+    } catch {}
+
+    try {
+        if (resReal.ok) {
+            dataReal = await resReal.json();
+        }
+    } catch {}
 
     // Mapeo de nombre, icono y orden personalizado
     const map: Record<string, { nombre: string; icono: string }> = {
+        // USD
         oficial: { nombre: 'Dólar Oficial', icono: '💵' },
         blue: { nombre: 'Dólar Blue', icono: '💶' },
         tarjeta: { nombre: 'Dólar Tarjeta', icono: '💳' },
+        // Ajuste a denominaciones de la API
+        bolsa: { nombre: 'Dólar MEP', icono: '📈' },
+        contadoconliqui: { nombre: 'Dólar CCL', icono: '🌐' },
+        cripto: { nombre: 'Dólar Cripto', icono: '⚡️' },
+        mayorista: { nombre: 'Dólar Mayorista', icono: '🏦' },
+        // Extras (si aparecieran)
         netflix: { nombre: 'Dólar Netflix', icono: '🎥' },
         mep: { nombre: 'Dólar MEP', icono: '📈' },
         ccl: { nombre: 'Dólar CCL', icono: '🌐' },
+        futuro: { nombre: 'Dólar Futuro', icono: '🔮' },
         vitawallet: { nombre: 'Vitawallet', icono: '🟣' },
         astropay: { nombre: 'Astropay', icono: '🟠' },
-        cripto: { nombre: 'Dólar Cripto', icono: '⚡️' },
-        mayorista: { nombre: 'Dólar Mayorista', icono: '🏦' },
-        futuro: { nombre: 'Dólar Futuro', icono: '🔮' },
-        // Euros
+        // EUR
         euro_oficial: { nombre: 'Euro Oficial', icono: '🇪🇺' },
         euro_blue: { nombre: 'Euro Blue', icono: '💶' },
         euro_tarjeta: { nombre: 'Euro Tarjeta', icono: '💳' },
-        // Reales
+        // BRL
         real_oficial: { nombre: 'Real Oficial', icono: '🇧🇷' },
         real_blue: { nombre: 'Real Blue', icono: '💶' },
         real_tarjeta: { nombre: 'Real Tarjeta', icono: '💳' },
     };
 
-    // Dólares
-    const cotizacionesDolar = dataDolar
+    // Dólares (lista)
+    const cotizacionesDolar = (Array.isArray(dataDolar) ? dataDolar : [])
         .filter((d: any) => map[d.casa])
         .map((d: any) => ({
             id: d.casa,
@@ -63,37 +87,55 @@ async function fetchCotizaciones(): Promise<Cotizacion[]> {
             tendencia: [],
         }));
 
-    // Euros
+    // Euros (objeto único -> lista de 1)
     const cotizacionesEuro = dataEuro
-        .filter((e: any) => map[e.casa])
-        .map((e: any) => ({
-            id: e.casa,
-            nombre: map[e.casa].nombre,
-            precio: e.venta,
-            variacion: 0,
-            icono: map[e.casa].icono,
-            ultimaActualizacion: e.fechaActualizacion,
-            favorito: false,
-            tendencia: [],
-        }));
+        ? (() => {
+              const prefixedId = `euro_${dataEuro.casa}`;
+              if (!map[prefixedId]) return [] as Cotizacion[];
+              return [
+                  {
+                      id: prefixedId,
+                      nombre: map[prefixedId].nombre,
+                      precio: dataEuro.venta,
+                      variacion: 0,
+                      icono: map[prefixedId].icono,
+                      ultimaActualizacion: dataEuro.fechaActualizacion,
+                      favorito: false,
+                      tendencia: [],
+                  },
+              ];
+          })()
+        : [];
 
-    // Reales
+    // Reales (objeto único -> lista de 1)
     const cotizacionesReal = dataReal
-        .filter((r: any) => map[r.casa])
-        .map((r: any) => ({
-            id: r.casa,
-            nombre: map[r.casa].nombre,
-            precio: r.venta,
-            variacion: 0,
-            icono: map[r.casa].icono,
-            ultimaActualizacion: r.fechaActualizacion,
-            favorito: false,
-            tendencia: [],
-        }));
+        ? (() => {
+              const prefixedId = `real_${dataReal.casa}`;
+              if (!map[prefixedId]) return [] as Cotizacion[];
+              return [
+                  {
+                      id: prefixedId,
+                      nombre: map[prefixedId].nombre,
+                      precio: dataReal.venta,
+                      variacion: 0,
+                      icono: map[prefixedId].icono,
+                      ultimaActualizacion: dataReal.fechaActualizacion,
+                      favorito: false,
+                      tendencia: [],
+                  },
+              ];
+          })()
+        : [];
 
-    return [...cotizacionesDolar, ...cotizacionesEuro, ...cotizacionesReal];
+    const result = [...cotizacionesDolar, ...cotizacionesEuro, ...cotizacionesReal];
+
+    // Si no hay ningún dato, arroja para que el componente muestre el error
+    if (result.length === 0) {
+        throw new Error('No se pudo obtener ninguna cotización');
+    }
+
+    return result;
 }
-
 
 
 
