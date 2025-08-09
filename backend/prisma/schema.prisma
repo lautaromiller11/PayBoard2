@@ -16,7 +16,6 @@ model User {
   createdAt    DateTime      @default(now())
   servicios    Servicio[]
   transacciones Transaccion[]
-  preferences  UserPreference?
 }
 
 model Servicio {
@@ -58,15 +57,6 @@ model Transaccion {
   user         User     @relation(fields: [userId], references: [id])
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
-}
-
-model UserPreference {
-  id            Int      @id @default(autoincrement())
-  userId        Int      @unique
-  user          User     @relation(fields: [userId], references: [id])
-  cotizaciones  String
-  updatedAt     DateTime @updatedAt
-  createdAt     DateTime @default(now())
 }
 
 

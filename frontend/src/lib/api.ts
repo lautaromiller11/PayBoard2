@@ -163,15 +163,4 @@ export async function fetchCategoriasPorTipo(tipo: 'ingreso' | 'gasto'): Promise
   return data
 }
 
-// ========== PREFERENCIAS ==========
-export async function fetchCotizacionesPreferidas(): Promise<string[]> {
-  const { data } = await api.get('/preferences/cotizaciones')
-  return data?.ids ?? []
-}
-
-export async function saveCotizacionesPreferidas(ids: string[]): Promise<string[]> {
-  const { data } = await api.put('/preferences/cotizaciones', { ids })
-  return data?.ids ?? []
-}
-
 
