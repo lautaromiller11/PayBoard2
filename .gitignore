@@ -44,6 +44,11 @@ jspm_packages/
 # Optional eslint cache
 .eslintcache
 
+# Archivos de entorno y DB local
+.env
+*.env
+backend/prisma/dev.db
+
 # Microbundle cache
 .rpt2_cache/
 .rts2_cache_cjs/
