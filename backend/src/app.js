@@ -9,8 +9,11 @@ const transaccionesRoutes = require('./routes/transacciones');
 
 const app = express();
 
-// Global middleware
-app.use(cors());
+// Configuración dinámica de CORS
+const allowedOrigin = process.env.NODE_ENV === 'production'
+  ? process.env.CORS_ORIGIN || 'https://tu-proyecto.vercel.app'
+  : process.env.CORS_ORIGIN || 'http://localhost:5173';
+app.use(cors({ origin: allowedOrigin }));
 app.use(express.json());
 app.use(morgan('dev'));
 

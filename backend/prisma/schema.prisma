@@ -5,7 +5,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -60,12 +60,3 @@ model Transaccion {
   updatedAt    DateTime @updatedAt
 }
 
-model User {
-  id           Int           @id @default(autoincrement())
-  email        String        @unique
-  password     String
-  createdAt    DateTime      @default(now())
-  servicios    Servicio[]
-  transacciones Transaccion[]
-  cotizacionesSeleccionadas String? // <-- Nuevo campo (puedes usar JSON.stringify)
-}
