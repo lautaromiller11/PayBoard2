@@ -18,18 +18,18 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     const status = error?.response?.status
-    if (status === 401) {
+    if (status === 401 || status === 403) {
       try {
         localStorage.removeItem('token')
         localStorage.removeItem('user')
       } catch { }
       if (typeof window !== 'undefined') {
-        window.location.href = '/login'
+        window.location.replace('/login');
       }
     }
     return Promise.reject(error)
   }
-)
+);
 
 export type Servicio = {
   id: number

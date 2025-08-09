@@ -1,12 +1,43 @@
+
 const express = require('express');
 const prisma = require('../config/prisma');
 const { authenticateJWT } = require('../middleware/auth');
 const { sendWhatsAppAlert } = require('../lib/whatsapp');
 
 const router = express.Router();
-
-// Protect all routes below
 router.use(authenticateJWT);
+
+// ...existing code...
+
+// DELETE /api/servicios/:id - elimina un servicio por ID
+router.delete('/:id', async (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    const service = await prisma.servicio.findUnique({ where: { id } });
+    if (!service || service.userId !== req.user.id) {
+      return res.status(404).json({ error: 'Servicio not found' });
+    }
+    // Eliminar transacciones asociadas
+    await prisma.transaccion.deleteMany({
+      where: {
+        tipo: 'gasto',
+        descripcion: `Pago de servicio: ${service.nombre}`,
+        userId: req.user.id
+      }
+    });
+    await prisma.servicio.delete({ where: { id } });
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// const express = require('express');
+// const prisma = require('../config/prisma');
+// const { authenticateJWT } = require('../middleware/auth');
+// const { sendWhatsAppAlert } = require('../lib/whatsapp');
+
 
 // Normalize a date-only input (YYYY-MM-DD or Date) to UTC noon to avoid timezone shifts
 function toUtcNoon(dateInput) {
@@ -80,8 +111,20 @@ router.get('/', async (req, res) => {
       orderBy: { vencimiento: 'asc' }
     });
 
-    // Auto-move to vencido if date is past today
-    // Validación desactivada: los servicios ya no se marcan automáticamente como vencidos si la fecha es anterior a hoy.
+    // Marcar como vencido si la fecha es anterior a hoy (sin hora)
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    const updates = [];
+    servicios.forEach(s => {
+      const venc = new Date(s.vencimiento);
+      venc.setHours(0, 0, 0, 0);
+      // Solo marcar como vencido si NO está pagado
+      if (venc < hoy && s.estado !== 'vencido' && s.estado !== 'pagado') {
+        updates.push(prisma.servicio.update({ where: { id: s.id }, data: { estado: 'vencido' } }));
+        s.estado = 'vencido';
+      }
+    });
+    if (updates.length) await Promise.all(updates);
 
     return res.json(servicios);
   } catch (err) {
@@ -97,9 +140,15 @@ router.post('/', async (req, res) => {
     if (!nombre || monto === undefined || !vencimiento || !periodicidad) {
       return res.status(400).json({ error: 'nombre, monto, vencimiento and periodicidad are required' });
     }
-    // Validación de fecha desactivada: se permite cualquier fecha de vencimiento, incluso anterior a hoy.
 
     const vencimientoUtc = toUtcNoon(vencimiento);
+    // Marcar como vencido si la fecha es anterior a hoy (sin hora)
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    const venc = new Date(vencimientoUtc);
+    venc.setHours(0, 0, 0, 0);
+    let estadoFinal = estado || 'por_pagar';
+    if (venc < hoy) estadoFinal = 'vencido';
 
     const servicio = await prisma.servicio.create({
       data: {
@@ -107,7 +156,7 @@ router.post('/', async (req, res) => {
         monto: String(monto),
         vencimiento: vencimientoUtc,
         periodicidad,
-        estado: estado || 'por_pagar',
+        estado: estadoFinal,
         userId: req.user.id,
         linkPago: linkPago || null,
         categoria: categoria || 'Otros'
@@ -126,12 +175,16 @@ router.post('/', async (req, res) => {
         const mm = fechaNuevaLocal.getUTCMonth() + 1;
         const dd = fechaNuevaLocal.getUTCDate();
         const fechaNueva = new Date(Date.UTC(yyyy, mm - 1, dd, 12, 0, 0));
+        let estadoFuturo = 'por_pagar';
+        const vencFuturo = new Date(fechaNueva);
+        vencFuturo.setHours(0, 0, 0, 0);
+        if (vencFuturo < hoy) estadoFuturo = 'vencido';
         serviciosFuturos.push({
           nombre,
           monto: String(monto),
           vencimiento: fechaNueva,
           periodicidad,
-          estado: 'por_pagar',
+          estado: estadoFuturo,
           userId: req.user.id,
           linkPago: linkPago || null,
           categoria: categoria || 'Otros'
@@ -146,6 +199,27 @@ router.post('/', async (req, res) => {
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'Server error' });
+  }
+});
+// Proceso diario para recalificar servicios vencidos
+router.post('/recalificar-vencidos', async (req, res) => {
+  try {
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    const servicios = await prisma.servicio.findMany({ where: { estado: { not: 'vencido' } } });
+    const updates = [];
+    servicios.forEach(s => {
+      const venc = new Date(s.vencimiento);
+      venc.setHours(0, 0, 0, 0);
+      if (venc < hoy) {
+        updates.push(prisma.servicio.update({ where: { id: s.id }, data: { estado: 'vencido' } }));
+      }
+    });
+    if (updates.length) await Promise.all(updates);
+    res.json({ ok: true, actualizados: updates.length });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error en recalificación' });
   }
 });
 
@@ -206,6 +280,8 @@ router.put('/:id', async (req, res) => {
 });
 
 // PATCH /api/servicios/:id/estado - update status and optionally create expense transaction when paid
+
+// DELETE /api/servicios/:id - delete service
 router.patch('/:id/estado', async (req, res) => {
   try {
     const id = parseInt(req.params.id, 10);
@@ -219,13 +295,23 @@ router.patch('/:id/estado', async (req, res) => {
       return res.status(404).json({ error: 'Servicio not found' });
     }
 
-    const updated = await prisma.servicio.update({ where: { id }, data: { estado: estadoNorm } });
+    // Si la fecha de vencimiento es anterior a hoy, forzar estado a 'vencido'
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    const venc = new Date(service.vencimiento);
+    venc.setHours(0, 0, 0, 0);
+    let estadoFinal = estadoNorm === 'pagado' ? 'pagado' : estadoNorm;
+    if (venc < hoy && estadoNorm !== 'pagado') {
+      estadoFinal = 'vencido';
+    }
+
+    const updated = await prisma.servicio.update({ where: { id }, data: { estado: estadoFinal } });
 
     // Enviar alerta si transiciona a vencido
     await maybeSendVencidoAlert(req.user.id, service, updated);
 
     // Si se marca como pagado, crear la transacción de gasto
-    if (estadoNorm === 'pagado') {
+    if (estadoFinal === 'pagado') {
       await prisma.transaccion.create({
         data: {
           tipo: 'gasto',
@@ -239,44 +325,11 @@ router.patch('/:id/estado', async (req, res) => {
         }
       });
     }
-
-
-    // Si se mueve a por_pagar o vencido, eliminar la transacción de gasto asociada
-    if (estadoNorm === 'por_pagar' || estadoNorm === 'vencido') {
-      await prisma.transaccion.deleteMany({
-        where: {
-          tipo: 'gasto',
-          descripcion: `Pago de servicio: ${service.nombre}`,
-          userId: req.user.id
-        }
-      });
-    }
-
     return res.json(updated);
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'Server error' });
   }
 });
-
-// DELETE /api/servicios/:id - delete service
-router.delete('/:id', async (req, res) => {
-  try {
-    const id = parseInt(req.params.id, 10);
-    const service = await prisma.servicio.findUnique({ where: { id } });
-    if (!service || service.userId !== req.user.id) {
-      return res.status(404).json({ error: 'Servicio not found' });
-    }
-
-    await prisma.pago.deleteMany({ where: { servicioId: id } });
-    await prisma.servicio.delete({ where: { id } });
-    return res.json({ ok: true });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: 'Server error' });
-  }
-});
-
 module.exports = router;
-
 

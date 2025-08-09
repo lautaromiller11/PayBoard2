@@ -36,21 +36,21 @@ export default function Servicios() {
     return `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}`
   })
 
-  // Agrupar servicios por columna (estado)
+  // Agrupar servicios por columna (estado) y reordenar columnas: Por pagar, Vencido, Pagado
   const grouped = useMemo(() => {
     const base: Record<ColumnKey, Servicio[]> = {
       por_pagar: [],
-      pagado: [],
-      vencido: []
+      vencido: [],
+      pagado: []
     };
-    if (!Array.isArray(servicios)) return base; // Defensive: if not array, return empty groups
+    if (!Array.isArray(servicios)) return base;
     servicios.forEach(s => {
       const key = (s.estado as ColumnKey) || 'por_pagar';
       if (!base[key]) base[key] = [];
       base[key].push(s);
     });
-    // opcional: ordenar por fecha de vencimiento ascendente
-    (Object.keys(base) as ColumnKey[]).forEach(k => {
+    // ordenar por fecha de vencimiento ascendente
+    (['por_pagar', 'vencido', 'pagado'] as ColumnKey[]).forEach(k => {
       base[k].sort((a, b) => {
         const da = new Date(a.vencimiento).getTime();
         const db = new Date(b.vencimiento).getTime();
@@ -143,12 +143,7 @@ export default function Servicios() {
     return date.toLocaleDateString('es-ES')
   }
 
-  // Verificar si un servicio está vencido
-  const isOverdue = (vencimiento: string) => {
-    const today = new Date()
-    const dueDate = new Date(vencimiento)
-    return !isNaN(dueDate.getTime()) && dueDate < today
-  }
+  // El estado vencido lo decide el backend. No marcar localmente.
 
   // Handlers del modal de borrado (solo una definición, ya no duplicadas)
   function handleDeleteClick(id: number) {
@@ -229,7 +224,7 @@ export default function Servicios() {
         <div className="bg-white rounded-xl shadow-sm border p-6">
           <DragDropContext onDragEnd={onDragEnd}>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {(['por_pagar', 'pagado', 'vencido'] as ColumnKey[]).map(columnId => (
+              {(['por_pagar', 'vencido', 'pagado'] as ColumnKey[]).map(columnId => (
                 <Droppable droppableId={columnId} key={columnId}>
                   {(provided, snapshot) => (
                     <div
@@ -262,7 +257,7 @@ export default function Servicios() {
                                   <div>
                                     <div className="font-medium text-gray-900">{servicio.nombre}</div>
                                     <div className="text-sm text-gray-600">Vence: {formatDate(servicio.vencimiento)}</div>
-                                    {isOverdue(servicio.vencimiento) && servicio.estado !== 'pagado' && (
+                                    {servicio.estado === 'vencido' && (
                                       <div className="mt-1 inline-block text-xs px-2 py-1 rounded bg-red-100 text-red-700 border border-red-200">
                                         Vencido
                                       </div>
