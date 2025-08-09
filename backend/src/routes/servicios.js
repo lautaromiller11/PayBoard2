@@ -1,7 +1,6 @@
 const express = require('express');
 const prisma = require('../config/prisma');
 const { authenticateJWT } = require('../middleware/auth');
-const { sendWhatsAppAlert } = require('../lib/whatsapp');
 
 const router = express.Router();
 
@@ -33,30 +32,6 @@ function toUtcNoon(dateInput) {
     d = tmp.getUTCDate();
   }
   return new Date(Date.UTC(y, (m - 1), d, 12, 0, 0));
-}
-
-function normalizeEstado(raw) {
-  if (!raw) return raw;
-  const val = String(raw).toLowerCase();
-  if (val === 'pagado' || val === 'por_pagar' || val === 'vencido') return val;
-  return raw; // fallback untouched if unknown
-}
-
-async function maybeSendVencidoAlert(userId, servicioAntes, servicioDespues) {
-  try {
-    const before = servicioAntes?.estado;
-    const after = servicioDespues?.estado;
-    if (before === 'vencido' || after !== 'vencido') return;
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { phoneNumber: true, whatsappAlertsEnabled: true }
-    });
-    if (!user || !user.whatsappAlertsEnabled || !user.phoneNumber) return;
-    const msg = `¡Alerta! El servicio "${servicioDespues.nombre}" está vencido. Monto: $${servicioDespues.monto}. Vencimiento: ${servicioDespues.vencimiento}`;
-    await sendWhatsAppAlert(user.phoneNumber, msg);
-  } catch (e) {
-    console.error('Error enviando alerta de WhatsApp:', e?.message || e);
-  }
 }
 
 // GET /api/servicios - list services for current user (with optional month/year filter)
@@ -159,21 +134,17 @@ router.put('/:id', async (req, res) => {
     }
 
     const { nombre, monto, vencimiento, periodicidad, estado, linkPago, categoria } = req.body;
-    const estadoNorm = estado !== undefined ? normalizeEstado(estado) : undefined;
     const data = {
       ...(nombre !== undefined ? { nombre } : {}),
       ...(monto !== undefined ? { monto: String(monto) } : {}),
       ...(vencimiento !== undefined ? { vencimiento: toUtcNoon(vencimiento) } : {}),
       ...(periodicidad !== undefined ? { periodicidad } : {}),
-      ...(estadoNorm !== undefined ? { estado: estadoNorm } : {}),
+      ...(estado !== undefined ? { estado } : {}),
       ...(linkPago !== undefined ? { linkPago } : {}),
       ...(categoria !== undefined ? { categoria } : {})
     };
 
     const updated = await prisma.servicio.update({ where: { id }, data });
-
-    // Enviar alerta si transiciona a vencido
-    await maybeSendVencidoAlert(req.user.id, service, updated);
 
     // Actualizar transacción de gasto asociada si existe (solo si el servicio está pagado)
     if (updated.estado === 'pagado') {
@@ -213,19 +184,15 @@ router.patch('/:id/estado', async (req, res) => {
     if (!estado) {
       return res.status(400).json({ error: 'estado is required' });
     }
-    const estadoNorm = normalizeEstado(estado);
     const service = await prisma.servicio.findUnique({ where: { id } });
     if (!service || service.userId !== req.user.id) {
       return res.status(404).json({ error: 'Servicio not found' });
     }
 
-    const updated = await prisma.servicio.update({ where: { id }, data: { estado: estadoNorm } });
-
-    // Enviar alerta si transiciona a vencido
-    await maybeSendVencidoAlert(req.user.id, service, updated);
+    const updated = await prisma.servicio.update({ where: { id }, data: { estado } });
 
     // Si se marca como pagado, crear la transacción de gasto
-    if (estadoNorm === 'pagado') {
+    if (estado === 'pagado') {
       await prisma.transaccion.create({
         data: {
           tipo: 'gasto',
@@ -242,7 +209,7 @@ router.patch('/:id/estado', async (req, res) => {
 
 
     // Si se mueve a por_pagar o vencido, eliminar la transacción de gasto asociada
-    if (estadoNorm === 'por_pagar' || estadoNorm === 'vencido') {
+    if (estado === 'por_pagar' || estado === 'vencido') {
       await prisma.transaccion.deleteMany({
         where: {
           tipo: 'gasto',
