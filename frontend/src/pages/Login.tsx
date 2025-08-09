@@ -1,16 +1,22 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { FaLock, FaCheckCircle, FaChartLine, FaWallet, FaChartPie, FaLink, FaListAlt, FaDatabase, FaMoneyBillWave } from 'react-icons/fa';
 import NavbarSimple from '../components/NavbarSimple';
 
 export default function Login() {
-  const { login } = useAuth()
+  const { login, token } = useAuth()
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (token) {
+      navigate('/dashboard', { replace: true })
+    }
+  }, [token, navigate])
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

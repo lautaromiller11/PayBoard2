@@ -6,6 +6,7 @@ const authRoutes = require('./routes/auth');
 const serviciosRoutes = require('./routes/servicios');
 const pagosRoutes = require('./routes/pagos');
 const transaccionesRoutes = require('./routes/transacciones');
+const preferencesRoutes = require('./routes/preferences');
 
 const app = express();
 
@@ -24,6 +25,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/servicios', serviciosRoutes);
 app.use('/api/pagos', pagosRoutes);
 app.use('/api/transacciones', transaccionesRoutes);
+app.use('/api/preferences', preferencesRoutes);
 
 // 404 handler
 app.use((req, res) => {
