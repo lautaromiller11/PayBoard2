@@ -15,7 +15,9 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16">
           {/* Logo/Brand */}
           <div className="flex items-center">
-            <h1 className="text-xl font-bold text-gray-800">PayBoard</h1>
+            <Link to="/" className="flex items-center">
+              <h1 className="text-xl font-bold text-gray-800">PayBoard</h1>
+            </Link>
           </div>
 
           {/* Navigation Links */}
@@ -24,13 +26,19 @@ export default function Navbar() {
               to="/servicios"
               className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive('/servicios')}`}
             >
-              Servicios
+              Mis Servicios
             </Link>
             <Link
               to="/finanzas"
               className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive('/finanzas')}`}
             >
               Finanzas Personales
+            </Link>
+            <Link
+              to="/cotizaciones"
+              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive('/cotizaciones')}`}
+            >
+              Cotizaciones
             </Link>
           </div>
 

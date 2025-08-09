@@ -3,9 +3,10 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import Servicios from './pages/Servicios'
 import FinanzasPersonales from './pages/FinanzasPersonales'
+import Cotizaciones from './pages/Cotizaciones'
+import Home from './pages/Home'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { SyncProvider } from './context/SyncContext'
-import Home from './pages/Home'
 
 function PrivateRoute({ children }: { children: JSX.Element }) {
   const { token } = useAuth()
@@ -35,6 +36,14 @@ export default function App() {
             element={
               <PrivateRoute>
                 <FinanzasPersonales />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/cotizaciones"
+            element={
+              <PrivateRoute>
+                <Cotizaciones />
               </PrivateRoute>
             }
           />

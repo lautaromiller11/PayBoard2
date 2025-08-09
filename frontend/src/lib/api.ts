@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { getAuthToken } from './auth'
 
-export const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:4000/api'
+export const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:4001/api'
 
 export const api = axios.create({ baseURL: API_BASE })
 
@@ -22,7 +22,7 @@ api.interceptors.response.use(
       try {
         localStorage.removeItem('token')
         localStorage.removeItem('user')
-      } catch {}
+      } catch { }
       if (typeof window !== 'undefined') {
         window.location.href = '/login'
       }
@@ -122,7 +122,7 @@ export async function fetchTransacciones(mes?: number, año?: number, tipo?: 'in
   if (mes) params.append('mes', mes.toString())
   if (año) params.append('año', año.toString())
   if (tipo) params.append('tipo', tipo)
-  
+
   const { data } = await api.get(`/transacciones?${params.toString()}`)
   return data
 }
