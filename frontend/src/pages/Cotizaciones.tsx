@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import CotizacionCard from '../components/CotizacionCard';
 import Layout from '../components/Layout';
+import { useAuth } from '../context/AuthContext';
 
 export type Cotizacion = {
     id: string;
@@ -140,11 +141,13 @@ async function fetchCotizaciones(): Promise<Cotizacion[]> {
 
 
 const Cotizaciones: React.FC = () => {
+    const { user } = useAuth();
     const [disponibles, setDisponibles] = useState<Cotizacion[]>([]);
     const [cotizaciones, setCotizaciones] = useState<Cotizacion[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [showModal, setShowModal] = useState(false);
+    const [hydrated, setHydrated] = useState(false);
 
     // Obtiene todos los activos disponibles y actualiza los seleccionados en vivo
     useEffect(() => {
@@ -169,6 +172,35 @@ const Cotizaciones: React.FC = () => {
         const interval = setInterval(load, 30000);
         return () => { mounted = false; clearInterval(interval); };
     }, [cotizaciones.length]);
+
+    // Hidratar selección inicial desde localStorage una vez por usuario cuando ya hay disponibles
+    useEffect(() => {
+        if (!user || hydrated === true || disponibles.length === 0) return;
+        try {
+            const key = `cotizaciones:${user.id}`;
+            const raw = localStorage.getItem(key);
+            if (raw) {
+                const ids: string[] = JSON.parse(raw);
+                const seleccionadas = ids
+                    .map(id => disponibles.find(d => d.id === id))
+                    .filter((x): x is Cotizacion => Boolean(x));
+                if (seleccionadas.length > 0) {
+                    setCotizaciones(seleccionadas);
+                }
+            }
+        } catch {}
+        setHydrated(true);
+    }, [user, disponibles, hydrated]);
+
+    // Guardar selección al cambiar para el usuario actual
+    useEffect(() => {
+        if (!user) return;
+        try {
+            const key = `cotizaciones:${user.id}`;
+            const ids = cotizaciones.map(c => c.id);
+            localStorage.setItem(key, JSON.stringify(ids));
+        } catch {}
+    }, [user, cotizaciones]);
 
     // Agregar cotización
     const handleAddCotizacion = (id: string) => {
