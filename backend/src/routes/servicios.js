@@ -1,11 +1,11 @@
 const express = require('express');
 const prisma = require('../config/prisma');
-const { authenticateJWT, ensureUserExists } = require('../middleware/auth');
+const { authenticateJWT } = require('../middleware/auth');
 
 const router = express.Router();
 
 // Protect all routes below
-router.use(authenticateJWT, ensureUserExists);
+router.use(authenticateJWT);
 
 // Normalize a date-only input (YYYY-MM-DD or Date) to UTC noon to avoid timezone shifts
 function toUtcNoon(dateInput) {
@@ -32,17 +32,6 @@ function toUtcNoon(dateInput) {
     d = tmp.getUTCDate();
   }
   return new Date(Date.UTC(y, (m - 1), d, 12, 0, 0));
-}
-
-// Normalize amount to a string with dot as decimal separator
-function normalizeAmount(input) {
-  if (input === null || input === undefined) return undefined;
-  const raw = String(input).trim().replace(/\./g, '').replace(',', '.');
-  // If user used thousands separators with dots (e.g., 1.234,56) the previous replace removes all dots.
-  // Now ensure it is a valid number
-  const num = Number(raw);
-  if (Number.isNaN(num)) return undefined;
-  return num.toString();
 }
 
 // GET /api/servicios - list services for current user (with optional month/year filter)
@@ -83,18 +72,14 @@ router.post('/', async (req, res) => {
     if (!nombre || monto === undefined || !vencimiento || !periodicidad) {
       return res.status(400).json({ error: 'nombre, monto, vencimiento and periodicidad are required' });
     }
-
-    const normalizedMonto = normalizeAmount(monto);
-    if (normalizedMonto === undefined) {
-      return res.status(400).json({ error: 'monto inválido' });
-    }
+    // Validación de fecha desactivada: se permite cualquier fecha de vencimiento, incluso anterior a hoy.
 
     const vencimientoUtc = toUtcNoon(vencimiento);
 
     const servicio = await prisma.servicio.create({
       data: {
         nombre,
-        monto: normalizedMonto,
+        monto: String(monto),
         vencimiento: vencimientoUtc,
         periodicidad,
         estado: estado || 'por_pagar',
@@ -118,7 +103,7 @@ router.post('/', async (req, res) => {
         const fechaNueva = new Date(Date.UTC(yyyy, mm - 1, dd, 12, 0, 0));
         serviciosFuturos.push({
           nombre,
-          monto: normalizedMonto,
+          monto: String(monto),
           vencimiento: fechaNueva,
           periodicidad,
           estado: 'por_pagar',
@@ -149,10 +134,9 @@ router.put('/:id', async (req, res) => {
     }
 
     const { nombre, monto, vencimiento, periodicidad, estado, linkPago, categoria } = req.body;
-    const maybeMonto = normalizeAmount(monto);
     const data = {
       ...(nombre !== undefined ? { nombre } : {}),
-      ...(monto !== undefined ? (maybeMonto !== undefined ? { monto: maybeMonto } : {}) : {}),
+      ...(monto !== undefined ? { monto: String(monto) } : {}),
       ...(vencimiento !== undefined ? { vencimiento: toUtcNoon(vencimiento) } : {}),
       ...(periodicidad !== undefined ? { periodicidad } : {}),
       ...(estado !== undefined ? { estado } : {}),
@@ -251,19 +235,9 @@ router.delete('/:id', async (req, res) => {
       return res.status(404).json({ error: 'Servicio not found' });
     }
 
-    // Eliminar transacciones de pago asociadas
-    await prisma.transaccion.deleteMany({
-      where: {
-        tipo: 'gasto',
-        descripcion: `Pago de servicio: ${service.nombre}`,
-        userId: req.user.id
-      }
-    });
-
     await prisma.pago.deleteMany({ where: { servicioId: id } });
     await prisma.servicio.delete({ where: { id } });
-
-    return res.status(204).send();
+    return res.json({ ok: true });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'Server error' });
