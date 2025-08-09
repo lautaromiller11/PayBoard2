@@ -55,7 +55,7 @@ export default function FinancialChart({ resumen, mes, año }: FinancialChartPro
   return (
     <div className="space-y-6">
       {/* Título */}
-  {/* Título eliminado */}
+      {/* Título eliminado */}
 
       {/* Gráfico de comparación general */}
       <div className="bg-white p-6 rounded-lg shadow-sm border">
