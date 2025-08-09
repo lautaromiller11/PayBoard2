@@ -61,6 +61,128 @@ router.post('/login', async (req, res) => {
   }
 });
 
+
+// GET /api/user/servicios-vencidos (ejemplo de integración de alerta)
+const { checkAndSendAlertsForUser } = require('../lib/whatsapp');
+router.get('/user/servicios-vencidos', async (req, res) => {
+  const userId = req.user.id;
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    include: { servicios: true }
+  });
+  const vencidos = user.servicios.filter(s => s.estado === 'vencido');
+  // Enviar alerta si corresponde
+  await checkAndSendAlertsForUser(userId);
+  res.json({ vencidos });
+});
+
+// POST /api/user/cotizaciones
+// GET /api/user/config
+const { authenticateJWT } = require('../middleware/auth');
+router.get('/user/config', authenticateJWT, async (req, res) => {
+  try {
+    console.log('GET /api/auth/user/config - req.user:', req.user);
+    if (!req.user || !req.user.id) {
+      console.log('No user or user.id in request');
+      return res.json({ phoneNumber: '', whatsappAlertsEnabled: false });
+    }
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id },
+      select: {
+        phoneNumber: true,
+        whatsappAlertsEnabled: true,
+      },
+    });
+    console.log('Resultado de prisma.user.findUnique:', user);
+    if (!user) {
+      console.log('Usuario no encontrado en la base de datos');
+      return res.json({ phoneNumber: '', whatsappAlertsEnabled: false });
+    }
+    res.json(user);
+  } catch (err) {
+    console.error('Error inesperado en GET /api/auth/user/config:', err);
+    res.json({ phoneNumber: '', whatsappAlertsEnabled: false });
+  }
+});
+
+// POST /api/user/config
+router.post('/user/config', authenticateJWT, async (req, res) => {
+  try {
+    console.log('POST /api/auth/user/config - req.user:', req.user);
+    if (!req.user || !req.user.id) {
+      console.log('No user or user.id in request');
+      return res.json({ phoneNumber: '', whatsappAlertsEnabled: false });
+    }
+    const { phoneNumber, whatsappAlertsEnabled } = req.body;
+    console.log('Datos recibidos:', { phoneNumber, whatsappAlertsEnabled });
+    let user;
+    try {
+      user = await prisma.user.update({
+        where: { id: req.user.id },
+        data: {
+          phoneNumber: phoneNumber || '',
+          whatsappAlertsEnabled: typeof whatsappAlertsEnabled === 'boolean' ? whatsappAlertsEnabled : false,
+        },
+        select: {
+          phoneNumber: true,
+          whatsappAlertsEnabled: true,
+        },
+      });
+      console.log('Resultado de prisma.user.update:', user);
+    } catch (e) {
+      console.error('Error en prisma.user.update:', e);
+      return res.json({ phoneNumber: '', whatsappAlertsEnabled: false });
+    }
+    res.json(user);
+  } catch (err) {
+    console.error('Error inesperado en POST /api/auth/user/config:', err);
+    res.json({ phoneNumber: '', whatsappAlertsEnabled: false });
+  }
+});
+router.post('/cotizaciones', async (req, res) => {
+  const userId = req.user.id;
+  const { cotizaciones } = req.body; // array de ids
+  await prisma.user.update({
+    where: { id: userId },
+    data: { cotizacionesSeleccionadas: JSON.stringify(cotizaciones) }
+  });
+  res.json({ ok: true });
+});
+
+
+// GET /api/user/config
+router.get('/user/config', async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    res.json({
+      phoneNumber: user.phoneNumber || '',
+      whatsappAlertsEnabled: !!user.whatsappAlertsEnabled
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Error al obtener configuración' });
+  }
+});
+
+// POST /api/user/config
+router.post('/user/config', async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { phoneNumber, whatsappAlertsEnabled } = req.body;
+    // Validación básica de teléfono
+    if (whatsappAlertsEnabled && (!phoneNumber || !/^\+?\d{10,15}$/.test(phoneNumber))) {
+      return res.status(400).json({ error: 'Número de teléfono inválido' });
+    }
+    await prisma.user.update({
+      where: { id: userId },
+      data: { phoneNumber, whatsappAlertsEnabled }
+    });
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Error al guardar configuración' });
+  }
+});
+
 module.exports = router;
 
 

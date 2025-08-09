@@ -11,7 +11,7 @@ export default function Home() {
                 <p className="text-xl text-gray-700 mb-6 text-center leading-relaxed">Tu plataforma integral para gestionar servicios y finanzas personales completamente gratis</p>
                 <p className="text-blue-600 font-medium mb-12 text-center leading-relaxed">Gestiona tus pagos, registra tus gastos y mantén todo conectado en un solo lugar</p>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto mb-12">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-4xl mx-auto mb-12">
                     <div className="bg-white rounded-xl shadow p-8 text-center flex flex-col items-center border">
                         <FaMoneyCheckAlt className="text-blue-600 text-3xl mb-3" />
                         <h2 className="text-xl font-bold mb-2">Organización de Servicios</h2>
@@ -21,6 +21,11 @@ export default function Home() {
                         <FaChartLine className="text-green-600 text-3xl mb-3" />
                         <h2 className="text-xl font-bold mb-2">Finanzas Personales</h2>
                         <p className="text-gray-700">Registra ingresos y gastos, visualiza tu balance y toma mejores decisiones financieras.</p>
+                    </div>
+                    <div className="bg-white rounded-xl shadow p-8 text-center flex flex-col items-center border">
+                        <span className="text-indigo-600 text-3xl mb-3">💱</span>
+                        <h2 className="text-xl font-bold mb-2">Cotizaciones en Vivo</h2>
+                        <p className="text-gray-700">Consulta las principales tasas y valores actualizados al instante. Todo en un solo lugar.</p>
                     </div>
                     <div className="bg-white rounded-xl shadow p-8 text-center flex flex-col items-center border">
                         <FaLink className="text-purple-600 text-3xl mb-3" />

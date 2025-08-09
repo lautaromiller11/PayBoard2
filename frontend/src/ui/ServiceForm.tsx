@@ -142,7 +142,6 @@ export default function ServiceForm({ onClose, onCreated, servicio, isEdit }: Pr
               value={vencimiento}
               onChange={e => setVencimiento(e.target.value)}
               type="date"
-              min={today}
               required
             />
           </div>

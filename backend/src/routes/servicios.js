@@ -56,19 +56,7 @@ router.get('/', async (req, res) => {
     });
 
     // Auto-move to vencido if date is past today
-    const today = new Date();
-    const updates = [];
-    for (const s of servicios) {
-      if (s.estado !== 'pagado' && new Date(s.vencimiento) < today && s.estado !== 'vencido') {
-        updates.push(
-          prisma.servicio.update({ where: { id: s.id }, data: { estado: 'vencido' } })
-        );
-      }
-    }
-    if (updates.length > 0) {
-      await Promise.all(updates);
-      servicios = await prisma.servicio.findMany({ where, orderBy: { vencimiento: 'asc' } });
-    }
+    // Validación desactivada: los servicios ya no se marcan automáticamente como vencidos si la fecha es anterior a hoy.
 
     return res.json(servicios);
   } catch (err) {
@@ -84,6 +72,7 @@ router.post('/', async (req, res) => {
     if (!nombre || monto === undefined || !vencimiento || !periodicidad) {
       return res.status(400).json({ error: 'nombre, monto, vencimiento and periodicidad are required' });
     }
+    // Validación de fecha desactivada: se permite cualquier fecha de vencimiento, incluso anterior a hoy.
 
     const vencimientoUtc = toUtcNoon(vencimiento);
 

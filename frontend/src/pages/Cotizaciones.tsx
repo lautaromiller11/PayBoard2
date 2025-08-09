@@ -31,19 +31,19 @@ async function fetchCotizaciones(): Promise<Cotizacion[]> {
         if (resDolar.ok) {
             dataDolar = await resDolar.json();
         }
-    } catch {}
+    } catch { }
 
     try {
         if (resEuro.ok) {
             dataEuro = await resEuro.json();
         }
-    } catch {}
+    } catch { }
 
     try {
         if (resReal.ok) {
             dataReal = await resReal.json();
         }
-    } catch {}
+    } catch { }
 
     // Mapeo de nombre, icono y orden personalizado
     const map: Record<string, { nombre: string; icono: string }> = {
@@ -90,41 +90,41 @@ async function fetchCotizaciones(): Promise<Cotizacion[]> {
     // Euros (objeto único -> lista de 1)
     const cotizacionesEuro = dataEuro
         ? (() => {
-              const prefixedId = `euro_${dataEuro.casa}`;
-              if (!map[prefixedId]) return [] as Cotizacion[];
-              return [
-                  {
-                      id: prefixedId,
-                      nombre: map[prefixedId].nombre,
-                      precio: dataEuro.venta,
-                      variacion: 0,
-                      icono: map[prefixedId].icono,
-                      ultimaActualizacion: dataEuro.fechaActualizacion,
-                      favorito: false,
-                      tendencia: [],
-                  },
-              ];
-          })()
+            const prefixedId = `euro_${dataEuro.casa}`;
+            if (!map[prefixedId]) return [] as Cotizacion[];
+            return [
+                {
+                    id: prefixedId,
+                    nombre: map[prefixedId].nombre,
+                    precio: dataEuro.venta,
+                    variacion: 0,
+                    icono: map[prefixedId].icono,
+                    ultimaActualizacion: dataEuro.fechaActualizacion,
+                    favorito: false,
+                    tendencia: [],
+                },
+            ];
+        })()
         : [];
 
     // Reales (objeto único -> lista de 1)
     const cotizacionesReal = dataReal
         ? (() => {
-              const prefixedId = `real_${dataReal.casa}`;
-              if (!map[prefixedId]) return [] as Cotizacion[];
-              return [
-                  {
-                      id: prefixedId,
-                      nombre: map[prefixedId].nombre,
-                      precio: dataReal.venta,
-                      variacion: 0,
-                      icono: map[prefixedId].icono,
-                      ultimaActualizacion: dataReal.fechaActualizacion,
-                      favorito: false,
-                      tendencia: [],
-                  },
-              ];
-          })()
+            const prefixedId = `real_${dataReal.casa}`;
+            if (!map[prefixedId]) return [] as Cotizacion[];
+            return [
+                {
+                    id: prefixedId,
+                    nombre: map[prefixedId].nombre,
+                    precio: dataReal.venta,
+                    variacion: 0,
+                    icono: map[prefixedId].icono,
+                    ultimaActualizacion: dataReal.fechaActualizacion,
+                    favorito: false,
+                    tendencia: [],
+                },
+            ];
+        })()
         : [];
 
     const result = [...cotizacionesDolar, ...cotizacionesEuro, ...cotizacionesReal];
@@ -141,7 +141,10 @@ async function fetchCotizaciones(): Promise<Cotizacion[]> {
 
 const Cotizaciones: React.FC = () => {
     const [disponibles, setDisponibles] = useState<Cotizacion[]>([]);
-    const [cotizaciones, setCotizaciones] = useState<Cotizacion[]>([]);
+    const [cotizaciones, setCotizaciones] = useState<Cotizacion[]>(() => {
+        const raw = localStorage.getItem('cotizacionesSeleccionadas');
+        return raw ? JSON.parse(raw) : [];
+    });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [showModal, setShowModal] = useState(false);
@@ -169,6 +172,11 @@ const Cotizaciones: React.FC = () => {
         const interval = setInterval(load, 30000);
         return () => { mounted = false; clearInterval(interval); };
     }, [cotizaciones.length]);
+
+    // Persistir cotizaciones seleccionadas en localStorage
+    useEffect(() => {
+        localStorage.setItem('cotizacionesSeleccionadas', JSON.stringify(cotizaciones));
+    }, [cotizaciones]);
 
     // Agregar cotización
     const handleAddCotizacion = (id: string) => {
