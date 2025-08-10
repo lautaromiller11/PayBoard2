@@ -22,6 +22,11 @@ app.get('/api/health', (req, res) => {
   res.json({ ok: true, service: 'pricecalc-backend' });
 });
 
+// Ruta raíz para testeo
+app.get('/', (req, res) => {
+  res.send('API funcionando correctamente');
+});
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/servicios', serviciosRoutes);
