@@ -27,12 +27,12 @@ router.delete('/:id', async (req, res) => {
           servicioId: id
         }
       });
-      // Eliminar transacciones relacionadas por descripcion y userId
+      // Eliminar transacciones relacionadas solo con este servicio
       await prisma.transaccion.deleteMany({
         where: {
           tipo: 'gasto',
           descripcion: {
-            contains: `Pago de servicio:`
+            contains: `Pago de servicio: ${service.nombre}`
           },
           userId: req.user.id
         }

@@ -60,11 +60,11 @@ export default function FinancialChart({ resumen, mes, año }: FinancialChartPro
       {/* Gráfico de comparación general */}
       <div className="bg-white p-6 rounded-lg shadow-sm border">
         <h4 className="text-lg font-medium text-gray-900 mb-4">Ingresos vs Gastos</h4>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={datosComparacion} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+        <ResponsiveContainer width="100%" height={window.innerWidth < 640 ? 220 : 300}>
+          <BarChart data={datosComparacion} margin={{ top: 20, right: window.innerWidth < 640 ? 10 : 30, left: window.innerWidth < 640 ? 10 : 20, bottom: window.innerWidth < 640 ? 40 : 5 }}>
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" />
-            <YAxis tickFormatter={formatCurrency} />
+            <XAxis dataKey="name" tick={{ fontSize: window.innerWidth < 640 ? 12 : 14 }} />
+            <YAxis tickFormatter={formatCurrency} tick={{ fontSize: window.innerWidth < 640 ? 12 : 14 }} />
             <Tooltip formatter={(value) => formatCurrency(Number(value))} />
             <Bar dataKey="monto">
               {datosComparacion.map((item, idx) => (
@@ -81,16 +81,17 @@ export default function FinancialChart({ resumen, mes, año }: FinancialChartPro
           {/* Gráfico de barras por categoría */}
           <div className="bg-white p-6 rounded-lg shadow-sm border">
             <h4 className="text-lg font-medium text-gray-900 mb-4">Por Categoría</h4>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={datosPorCategoria} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+            <ResponsiveContainer width="100%" height={window.innerWidth < 640 ? 220 : 300}>
+              <BarChart data={datosPorCategoria} margin={{ top: 20, right: window.innerWidth < 640 ? 10 : 30, left: window.innerWidth < 640 ? 10 : 20, bottom: window.innerWidth < 640 ? 60 : 5 }}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis
                   dataKey="categoria"
-                  angle={-45}
+                  angle={window.innerWidth < 640 ? -30 : -45}
                   textAnchor="end"
-                  height={80}
+                  height={window.innerWidth < 640 ? 60 : 80}
+                  tick={{ fontSize: window.innerWidth < 640 ? 11 : 14, wordBreak: 'break-word' }}
                 />
-                <YAxis tickFormatter={formatCurrency} />
+                <YAxis tickFormatter={formatCurrency} tick={{ fontSize: window.innerWidth < 640 ? 12 : 14 }} />
                 <Tooltip formatter={(value) => formatCurrency(Number(value))} />
                 <Bar dataKey="ingresos" fill="#10B981" name="Ingresos" />
                 <Bar dataKey="gastos" fill="#EF4444" name="Gastos" />
@@ -102,15 +103,15 @@ export default function FinancialChart({ resumen, mes, año }: FinancialChartPro
           {gastosCategoria.length > 0 && (
             <div className="bg-white p-6 rounded-lg shadow-sm border">
               <h4 className="text-lg font-medium text-gray-900 mb-4">Distribución de Gastos</h4>
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={window.innerWidth < 640 ? 220 : 300}>
                 <PieChart>
                   <Pie
                     data={gastosCategoria}
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={80}
+                    label={({ name, percent }) => `${name.length > 10 && window.innerWidth < 640 ? name.slice(0, 8) + '…' : name} ${(percent * 100).toFixed(0)}%`}
+                    outerRadius={window.innerWidth < 640 ? 60 : 80}
                     fill="#8884d8"
                     dataKey="value"
                   >

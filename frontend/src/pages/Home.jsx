@@ -42,12 +42,15 @@ export default function Home() {
                 <div className="max-w-3xl mx-auto mb-12">
                     <h2 className="text-2xl font-bold text-center mb-4">¿Por qué elegir PayBoard?</h2>
                     <ul className="list-disc text-gray-700 pl-6 space-y-2">
-                        <li>Centraliza la gestión de servicios y finanzas</li>
-                        <li>Interfaz moderna, intuitiva y responsive</li>
-                        <li>Automatización de pagos y gastos</li>
-                        <li>Visualización clara de tu balance y gastos</li>
-                        <li>Conexión automática entre módulos</li>
-                        <li>Seguridad y privacidad de tus datos</li>
+                        <li>Plataforma 100% gratuita para gestionar servicios y finanzas personales.</li>
+                        <li>Centraliza pagos, gastos, ingresos y control de servicios en un solo lugar.</li>
+                        <li>Interfaz moderna, intuitiva y totalmente responsive.</li>
+                        <li>Visualización clara de tu balance, historial y estadísticas financieras.</li>
+                        <li>Sincronización automática entre módulos.</li>
+                        <li>Seguridad y privacidad garantizada para tus datos.</li>
+                        <li>Soporte para múltiples categorías, servicios recurrentes y pagos online.</li>
+                        <li>Cotizaciones en vivo: consulta tasas y valores actualizados al instante.</li>
+                        <li>Acceso rápido desde cualquier dispositivo, sin costos ocultos.</li>
                     </ul>
                 </div>
             </main>

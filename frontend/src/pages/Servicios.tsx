@@ -5,6 +5,7 @@ import { changeEstado, createPago, deleteServicio, fetchServicios, Servicio } fr
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal'
 import ServiceForm from '../ui/ServiceForm'
 import Layout from '../components/Layout'
+import { FaCalendarAlt } from 'react-icons/fa'
 
 type ColumnKey = 'por_pagar' | 'pagado' | 'vencido'
 
@@ -35,6 +36,7 @@ export default function Servicios() {
     const now = new Date()
     return `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}`
   })
+  const [calendarOpen, setCalendarOpen] = useState(false);
 
   // Agrupar servicios por columna (estado) y reordenar columnas: Por pagar, Vencido, Pagado
   const grouped = useMemo(() => {
@@ -195,35 +197,60 @@ export default function Servicios() {
 
   return (
     <Layout>
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Gestión de Servicios</h1>
-            <p className="text-gray-600 mt-1">
-              Organiza y gestiona tus servicios
-            </p>
+      <div className="max-w-6xl mx-auto px-2 sm:px-4">
+        {/* Header - Responsive, mobile friendly */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
+          <div className="flex flex-col gap-1">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight">Gestión de Servicios</h1>
+            <p className="text-gray-600 text-base sm:text-lg">Organiza y gestiona tus servicios</p>
           </div>
-          <div className="flex items-center gap-3">
-            <input
-              type="month"
-              value={mesSeleccionado}
-              onChange={(e) => setMesSeleccionado(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+          <div className="flex gap-2 items-center w-full sm:w-auto">
+            {/* Calendario con icono, abre modal visual */}
+            <button
+              className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg text-blue-600 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm ml-2 sm:ml-0"
+              onClick={() => setCalendarOpen(true)}
+              aria-label="Seleccionar mes"
+            >
+              <FaCalendarAlt size={18} />
+              <span className="hidden sm:inline">Mes</span>
+            </button>
             <button
               onClick={() => setModalOpen(true)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+              className="flex-1 sm:flex-none px-2 sm:px-8 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm whitespace-nowrap max-w-[140px] sm:max-w-none"
+              style={{ minWidth: 'unset' }}
             >
-              + Nuevo Servicio
+              + Servicio
             </button>
+            {/* Modal calendario */}
+            {calendarOpen && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
+                <div className="bg-white rounded-lg shadow-lg p-6 w-80 max-w-full flex flex-col items-center">
+                  <h2 className="text-lg font-semibold mb-4 text-gray-800">Selecciona el mes</h2>
+                  <input
+                    type="month"
+                    value={mesSeleccionado}
+                    onChange={e => {
+                      setMesSeleccionado(e.target.value);
+                      setCalendarOpen(false);
+                    }}
+                    className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4 w-full"
+                  />
+                  <button
+                    onClick={() => setCalendarOpen(false)}
+                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Tablero Kanban */}
-        <div className="bg-white rounded-xl shadow-sm border p-6">
+        {/* Tablero Kanban - Responsive */}
+        <div className="bg-white rounded-xl shadow-sm border p-3 sm:p-6">
           <DragDropContext onDragEnd={onDragEnd}>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {(['por_pagar', 'vencido', 'pagado'] as ColumnKey[]).map(columnId => (
                 <Droppable droppableId={columnId} key={columnId}>
                   {(provided, snapshot) => (
@@ -235,8 +262,8 @@ export default function Servicios() {
                         : columnColors[columnId]
                         }`}
                     >
-                      <h3 className="font-semibold text-lg mb-4 text-gray-800">
-                        {columnTitles[columnId]} ({grouped[columnId]?.length ?? 0})
+                      <h3 className="font-semibold text-base sm:text-lg mb-4 text-gray-800">
+                        {columnTitles[columnId]} <span className="font-normal text-gray-500">({grouped[columnId]?.length ?? 0})</span>
                       </h3>
 
                       <div className="space-y-3">
@@ -251,12 +278,12 @@ export default function Servicios() {
                                 ref={dragProvided.innerRef}
                                 {...dragProvided.draggableProps}
                                 {...dragProvided.dragHandleProps}
-                                className="p-4 rounded-lg bg-white border shadow-sm hover:shadow transition-shadow"
+                                className="p-3 sm:p-4 rounded-lg bg-white border shadow-sm hover:shadow transition-shadow"
                               >
-                                <div className="flex items-start justify-between">
+                                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                                   <div>
-                                    <div className="font-medium text-gray-900">{servicio.nombre}</div>
-                                    <div className="text-sm text-gray-600">Vence: {formatDate(servicio.vencimiento)}</div>
+                                    <div className="font-medium text-gray-900 text-base sm:text-lg">{servicio.nombre}</div>
+                                    <div className="text-xs sm:text-sm text-gray-600">Vence: {formatDate(servicio.vencimiento)}</div>
                                     {servicio.estado === 'vencido' && (
                                       <div className="mt-1 inline-block text-xs px-2 py-1 rounded bg-red-100 text-red-700 border border-red-200">
                                         Vencido
@@ -264,14 +291,14 @@ export default function Servicios() {
                                     )}
                                   </div>
                                   <div className="text-right">
-                                    <div className="text-lg font-semibold text-gray-900">${Number(servicio.monto).toLocaleString('es-AR')}</div>
+                                    <div className="text-base sm:text-lg font-semibold text-gray-900">${Number(servicio.monto).toLocaleString('es-AR')}</div>
                                   </div>
                                 </div>
-                                <div className="flex items-center gap-2 mt-3">
+                                <div className="flex flex-wrap gap-2 mt-2 sm:mt-3">
                                   {servicio.estado !== 'pagado' && (
                                     <button
                                       onClick={() => onPayClick(servicio)}
-                                      className="px-3 py-1.5 text-sm bg-green-600 text-white rounded hover:bg-green-700"
+                                      className="px-3 py-1.5 text-xs sm:text-sm bg-green-600 text-white rounded hover:bg-green-700"
                                     >
                                       Pagar
                                     </button>
@@ -279,14 +306,14 @@ export default function Servicios() {
                                   <button
                                     type="button"
                                     onClick={() => handleDeleteClick(servicio.id)}
-                                    className="px-3 py-1.5 text-sm text-gray-500 hover:text-red-600"
+                                    className="px-3 py-1.5 text-xs sm:text-sm text-gray-500 hover:text-red-600"
                                   >
                                     Eliminar
                                   </button>
                                   <button
                                     type="button"
                                     onClick={() => { setEditServicio(servicio); setEditModalOpen(true); }}
-                                    className="px-3 py-1.5 text-sm text-gray-500 hover:text-blue-600"
+                                    className="px-3 py-1.5 text-xs sm:text-sm text-gray-500 hover:text-blue-600"
                                   >
                                     Editar
                                   </button>

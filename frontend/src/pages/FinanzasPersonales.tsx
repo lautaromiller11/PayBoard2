@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { FaCalendarAlt } from 'react-icons/fa'
 import { useSync } from '../context/SyncContext'
 import Layout from '../components/Layout'
 import TransactionForm from '../ui/TransactionForm'
@@ -22,8 +23,8 @@ export default function FinanzasPersonales() {
   const [modalIngresoOpen, setModalIngresoOpen] = useState(false)
   const [modalGastoOpen, setModalGastoOpen] = useState(false)
 
-  // Estados para filtros
-  const [filtroTipo, setFiltroTipo] = useState<'todos' | 'ingreso' | 'gasto'>('todos')
+  // Estado calendario y mes seleccionado
+  const [calendarOpen, setCalendarOpen] = useState(false);
   const [mesSeleccionado, setMesSeleccionado] = useState(() => {
     const fecha = new Date();
     return `${fecha.getFullYear()}-${(fecha.getMonth() + 1).toString().padStart(2, '0')}`;
@@ -35,7 +36,7 @@ export default function FinanzasPersonales() {
   // Cargar datos al montar el componente y cuando cambien los filtros
   useEffect(() => {
     loadData();
-  }, [mes, año, filtroTipo]);
+  }, [mes, año]);
 
   // Sincronizar cuando se edita/paga/elimina un servicio
   useEffect(() => {
@@ -52,7 +53,7 @@ export default function FinanzasPersonales() {
 
       // Cargar transacciones y resumen en paralelo
       const [transaccionesData, resumenData] = await Promise.all([
-        fetchTransacciones(mes, año, filtroTipo === 'todos' ? undefined : filtroTipo),
+        fetchTransacciones(mes, año),
         fetchResumenFinanciero(año, mes)
       ])
 
@@ -114,53 +115,59 @@ export default function FinanzasPersonales() {
     <Layout>
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Finanzas Personales</h1>
-            {/* Eliminado: Control financiero - {nombreMes} */}
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Finanzas Personales</h1>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-2 items-center w-full sm:w-auto">
+            {/* Calendario con icono, abre modal visual */}
+            <button
+              className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg text-blue-600 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+              onClick={() => setCalendarOpen(true)}
+              aria-label="Seleccionar mes"
+            >
+              <FaCalendarAlt size={18} />
+              <span className="hidden sm:inline">Mes</span>
+            </button>
             <button
               onClick={() => setModalIngresoOpen(true)}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+              className="flex-1 sm:flex-none px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium text-sm whitespace-nowrap"
             >
               + Nuevo Ingreso
             </button>
             <button
               onClick={() => setModalGastoOpen(true)}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+              className="flex-1 sm:flex-none px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium text-sm whitespace-nowrap"
             >
               + Nuevo Gasto
             </button>
+            {/* Modal calendario */}
+            {calendarOpen && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
+                <div className="bg-white rounded-lg shadow-lg p-6 w-80 max-w-full flex flex-col items-center">
+                  <h2 className="text-lg font-semibold mb-4 text-gray-800">Selecciona el mes</h2>
+                  <input
+                    type="month"
+                    value={mesSeleccionado}
+                    onChange={e => {
+                      setMesSeleccionado(e.target.value);
+                      setCalendarOpen(false);
+                    }}
+                    className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4 w-full"
+                  />
+                  <button
+                    onClick={() => setCalendarOpen(false)}
+                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Filtros */}
-        <div className="bg-white p-4 rounded-lg shadow-sm border mb-6">
-          <div className="flex flex-wrap gap-4 items-center">
-            <div>
-              <label className="text-sm font-medium text-gray-700 mr-2">Mes:</label>
-              <input
-                type="month"
-                value={mesSeleccionado}
-                onChange={(e) => setMesSeleccionado(e.target.value)}
-                className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium text-gray-700 mr-2">Tipo:</label>
-              <select
-                value={filtroTipo}
-                onChange={(e) => setFiltroTipo(e.target.value as any)}
-                className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="todos">Todos</option>
-                <option value="ingreso">Ingresos</option>
-                <option value="gasto">Gastos</option>
-              </select>
-            </div>
-          </div>
-        </div>
+        {/* Filtros eliminados, solo calendario arriba */}
 
         {/* Resumen del mes y debajo historial de transacciones */}
         {resumen && (

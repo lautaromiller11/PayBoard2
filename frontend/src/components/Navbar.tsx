@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useState } from 'react'
+import { FaBars, FaUserCircle, FaSignOutAlt } from 'react-icons/fa'
 
 export default function Navbar() {
   const { user, logout } = useAuth()
@@ -18,75 +19,95 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="bg-white shadow-sm border-b">
-      <div className="max-w-6xl mx-auto px-6">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo/Brand */}
-          <div className="flex items-center">
-            <Link to="/" className="flex items-center">
-              <h1 className="text-xl font-bold text-gray-800">PayBoard</h1>
+    <nav className="bg-white shadow-sm border-b w-full">
+      <div className="w-full px-2 sm:px-6">
+        {/* Mobile: logo y menú arriba, botones abajo */}
+        <div className="block sm:hidden w-full">
+          <div className="flex items-center justify-between h-16 w-full">
+            <Link to="/" className="flex items-center min-w-0 pl-2 hover:opacity-80 transition-opacity">
+              <h1 className="text-xl font-bold text-gray-800 truncate">PayBoard</h1>
             </Link>
+            <div className="flex items-center pr-2">
+              <div className="relative">
+                <button
+                  className="p-2 rounded-full text-gray-600 hover:bg-gray-100 focus:outline-none"
+                  onClick={() => setMenuOpen(!menuOpen)}
+                  aria-label="Abrir menú de usuario"
+                >
+                  <FaBars size={24} />
+                </button>
+                {menuOpen && (
+                  <div className="absolute right-0 mt-2 w-40 bg-white rounded shadow-lg z-50 border">
+                    <Link to="/perfil" className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100">
+                      <FaUserCircle /> Perfil
+                    </Link>
+                    <button
+                      onClick={logout}
+                      className="flex items-center gap-2 w-full px-4 py-2 text-gray-700 hover:bg-gray-100 text-left"
+                    >
+                      <FaSignOutAlt /> Cerrar sesión
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
-
-          {/* Navigation Links */}
-          <div className="flex items-center space-x-4">
+          <div className="flex justify-center items-center gap-2 py-2 w-full">
             <Link
               to="/servicios"
-              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive('/servicios')}`}
+              className={`px-2 py-2 rounded-md text-xs font-medium transition-colors whitespace-nowrap ${isActive('/servicios')}`}
             >
-              Mis Servicios
+              Mis servicios
             </Link>
             <Link
               to="/finanzas"
-              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive('/finanzas')}`}
+              className={`px-2 py-2 rounded-md text-xs font-medium transition-colors whitespace-nowrap ${isActive('/finanzas')}`}
             >
-              Finanzas Personales
+              Finanzas personales
             </Link>
             <Link
               to="/cotizaciones"
-              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive('/cotizaciones')}`}
+              className={`px-2 py-2 rounded-md text-xs font-medium transition-colors whitespace-nowrap ${isActive('/cotizaciones')}`}
             >
               Cotizaciones
             </Link>
           </div>
-
-          {/* User Menu */}
-          <div className="relative flex items-center space-x-4">
-            <button
-              onClick={handleProfileClick}
-              className="p-2 rounded-full hover:bg-gray-100 focus:outline-none"
-              title="Perfil"
+        </div>
+        {/* Desktop: todo en una sola fila */}
+        <div className="hidden sm:flex items-center justify-between h-16 w-full">
+          <Link to="/" className="flex items-center min-w-0 pl-2 hover:opacity-80 transition-opacity">
+            <h1 className="text-2xl font-bold text-gray-800 truncate">PayBoard</h1>
+          </Link>
+          <div className="flex gap-6 flex-1 justify-center items-center min-w-0">
+            <Link
+              to="/servicios"
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${isActive('/servicios')}`}
             >
-              {/* SVG icon user */}
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-gray-600">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 20.25a8.25 8.25 0 1115 0v.75A2.25 2.25 0 0117.25 23H6.75A2.25 2.25 0 014.5 21v-.75z" />
-              </svg>
-            </button>
+              Mis servicios
+            </Link>
+            <Link
+              to="/finanzas"
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${isActive('/finanzas')}`}
+            >
+              Finanzas personales
+            </Link>
+            <Link
+              to="/cotizaciones"
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${isActive('/cotizaciones')}`}
+            >
+              Cotizaciones
+            </Link>
+          </div>
+          <div className="flex items-center pr-2 gap-3">
+            <Link to="/perfil" className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-blue-600">
+              <FaUserCircle /> Perfil
+            </Link>
             <button
               onClick={logout}
-              className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-red-600 transition-colors"
+              className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-red-600"
             >
-              Cerrar Sesión
+              <FaSignOutAlt /> Cerrar sesión
             </button>
-            {menuOpen && (
-              <div className="absolute right-0 top-12 bg-white border rounded shadow-lg p-4 z-50 min-w-[200px]">
-                <div className="mb-2 text-gray-800 font-semibold">Perfil de Usuario</div>
-                <div className="mb-2 text-sm text-gray-600">Correo: {user?.email}</div>
-                <button
-                  onClick={handleGoToProfile}
-                  className="w-full px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors mb-2"
-                >
-                  Ver perfil
-                </button>
-                <button
-                  onClick={handleProfileClick}
-                  className="w-full px-3 py-2 text-sm text-gray-600 hover:text-red-600 transition-colors"
-                >
-                  Cerrar
-                </button>
-              </div>
-            )}
           </div>
         </div>
       </div>
