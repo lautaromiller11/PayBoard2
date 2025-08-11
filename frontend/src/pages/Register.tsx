@@ -44,10 +44,10 @@ export default function Register() {
       </div>
       <NavbarSimple />
       <div className="flex flex-col items-center justify-center w-full px-2 py-8 sm:px-4 sm:py-12 relative z-10">
-        <div className="w-full max-w-xl bg-white rounded-xl shadow-lg p-4 sm:p-8 flex flex-col gap-8 items-center">
+        <div className="w-full max-w-3xl bg-white rounded-xl shadow-lg p-4 sm:p-8 flex flex-col sm:flex-row gap-16 items-center">
           {/* Textos informativos arriba en mobile, izquierda en desktop */}
-          <div className="w-full flex flex-col justify-center items-center mb-4">
-            <h1 className="text-2xl sm:text-3xl font-bold text-blue-700 mb-6 text-center">Controla tus finanzas y servicios fácilmente</h1>
+          <div className="w-full sm:w-1/2 flex flex-col justify-center items-center sm:items-start mb-4">
+            <h1 className="text-2xl sm:text-3xl font-bold text-blue-700 mb-6 text-center sm:text-left">Controla tus finanzas y servicios fácilmente</h1>
             <ul className="mb-6 flex flex-col gap-3 text-base sm:text-lg text-gray-700 w-full">
               <li className="flex items-center gap-3 whitespace-nowrap"><FaWallet size={20} color="#2563eb" /> Registra y controla tus gastos e ingresos</li>
               <li className="flex items-center gap-3 whitespace-nowrap"><FaListAlt size={20} color="#22c55e" /> Organiza todos tus servicios y pagos</li>
@@ -55,10 +55,10 @@ export default function Register() {
               <li className="flex items-center gap-3 whitespace-nowrap"><FaLink size={20} color="#eab308" /> Conecta automáticamente tus módulos</li>
               <li className="flex items-center gap-3 whitespace-nowrap"><FaCheckCircle size={20} color="#2563eb" /> <span className="font-bold">¡Es gratis!</span></li>
             </ul>
-            <p className="text-base text-gray-700 mb-2 leading-relaxed text-center">Regístrate gratis y organiza tus finanzas hoy mismo.</p>
+            <p className="text-base text-gray-700 mb-2 leading-relaxed text-center sm:text-left">Regístrate gratis y organiza tus finanzas hoy mismo.</p>
           </div>
           {/* Formulario adaptativo */}
-          <div className="w-full max-w-md">
+          <div className="w-full max-w-md sm:w-[420px]">
             <form onSubmit={onSubmit} className="bg-gray-50 border border-gray-200 rounded-xl shadow p-4 sm:p-8 flex flex-col w-full">
               <h2 className="text-lg sm:text-xl font-bold mb-4 text-center">Empieza gratis en segundos</h2>
               <div className="mb-4">
