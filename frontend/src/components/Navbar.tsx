@@ -14,10 +14,6 @@ export default function Navbar() {
   }
 
   const [menuOpen, setMenuOpen] = useState(false)
-  const [profileOpen, setProfileOpen] = useState(false)
-  const [mobileProfileOpen, setMobileProfileOpen] = useState(false)
-  const toggleProfile = () => setProfileOpen((v) => !v)
-  const toggleMobileProfile = () => setMobileProfileOpen((v) => !v)
 
   return (
     <nav className="bg-white dark:bg-dark-bg-primary shadow-sm border-b dark:border-dark-600 w-full theme-transition">
@@ -46,17 +42,13 @@ export default function Navbar() {
                       {theme === 'dark' ? <FaSun size={16} /> : <FaMoon size={16} />}
                       {theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}
                     </button>
-                    <button
-                      onClick={toggleMobileProfile}
+                    <Link
+                      to="/perfil"
                       className="flex items-center gap-2 w-full px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-dark-bg-accent text-left"
+                      onClick={() => setMenuOpen(false)}
                     >
                       <FaUserCircle /> Perfil
-                    </button>
-                    {mobileProfileOpen && (
-                      <div className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 break-all">
-                        {user?.email || 'Sin email'}
-                      </div>
-                    )}
+                    </Link>
                     <button
                       onClick={logout}
                       className="flex items-center gap-2 w-full px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-dark-bg-accent text-left"
@@ -122,20 +114,12 @@ export default function Navbar() {
             >
               {theme === 'dark' ? <FaSun size={18} /> : <FaMoon size={16} />}
             </button>
-            <button
-              onClick={toggleProfile}
-              className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
-              aria-haspopup="true"
-              aria-expanded={profileOpen}
+            <Link
+              to="/perfil"
+              className={`flex items-center gap-2 px-3 py-2 text-sm font-medium transition-colors ${isActive('/perfil')}`}
             >
               <FaUserCircle /> Perfil
-            </button>
-            {profileOpen && (
-              <div className="absolute right-2 top-12 w-64 bg-white dark:bg-dark-bg-secondary rounded shadow-lg border dark:border-dark-600 z-50 p-3">
-                <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Email</div>
-                <div className="text-sm text-gray-800 dark:text-white break-all">{user?.email || 'Sin email'}</div>
-              </div>
-            )}
+            </Link>
             <button
               onClick={logout}
               className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400"
