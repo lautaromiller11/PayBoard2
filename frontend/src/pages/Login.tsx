@@ -43,10 +43,18 @@ export default function Login() {
           {/* Textos informativos arriba en mobile, izquierda en desktop */}
           <div className="w-full sm:w-1/2 flex flex-col justify-center items-center sm:items-start mb-4">
             <h1 className="text-2xl sm:text-3xl font-bold text-blue-700 mb-6 text-center sm:text-left">Bienvenido a PayBoard</h1>
-            <ul className="mb-6 flex flex-col gap-3 text-base sm:text-lg text-gray-700 w-full">
-              <li className="flex items-center gap-3 whitespace-nowrap"><FaChartLine size={20} color="#22c55e" /> Controla tus finanzas personales fácilmente</li>
-              <li className="flex items-center gap-3 whitespace-nowrap"><FaCheckCircle size={20} color="#2563eb" /> Organiza tus servicios en un solo lugar</li>
-              <li className="flex items-center gap-3 whitespace-nowrap"><FaLock size={20} color="#eab308" /> <span className="font-bold">Tus datos siempre seguros</span></li>
+            <ul className="mb-6 flex flex-col gap-3 text-sm sm:text-lg text-gray-700 w-full">
+              <li className="flex items-center gap-3 whitespace-nowrap">
+                <span className="inline-flex w-5 justify-center flex-shrink-0"><FaWallet size={20} color="#2563eb" /></span>
+                <span>Controla tus finanzas personales fácilmente</span>
+              </li>
+              <li className="flex items-center gap-3 whitespace-nowrap">
+                <span className="inline-flex w-5 justify-center flex-shrink-0"><FaCheckCircle size={20} color="#2563eb" /></span>
+                <span>Organiza tus servicios en un solo lugar</span>
+              </li>
+              <li className="flex items-center gap-3">
+                <FaLock size={20} color="#eab308" /> <span className="font-bold">Tus datos siempre seguros</span>
+              </li>
             </ul>
             <p className="text-base text-gray-700 mb-2 leading-relaxed text-center sm:text-left">Accede a tu panel y gestiona todo desde un solo lugar.</p>
           </div>

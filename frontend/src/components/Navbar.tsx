@@ -11,12 +11,11 @@ export default function Navbar() {
     return location.pathname === path ? 'bg-blue-600 text-white' : 'text-gray-600 hover:text-blue-600'
   }
 
-  const [menuOpen, setMenuOpen] = useState(false);
-  const handleProfileClick = () => setMenuOpen(!menuOpen);
-  const handleGoToProfile = () => {
-    setMenuOpen(false);
-    window.location.href = '/perfil';
-  };
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [profileOpen, setProfileOpen] = useState(false)
+  const [mobileProfileOpen, setMobileProfileOpen] = useState(false)
+  const toggleProfile = () => setProfileOpen((v) => !v)
+  const toggleMobileProfile = () => setMobileProfileOpen((v) => !v)
 
   return (
     <nav className="bg-white shadow-sm border-b w-full">
@@ -37,10 +36,18 @@ export default function Navbar() {
                   <FaBars size={24} />
                 </button>
                 {menuOpen && (
-                  <div className="absolute right-0 mt-2 w-40 bg-white rounded shadow-lg z-50 border">
-                    <Link to="/perfil" className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100">
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded shadow-lg z-50 border py-2">
+                    <button
+                      onClick={toggleMobileProfile}
+                      className="flex items-center gap-2 w-full px-4 py-2 text-gray-700 hover:bg-gray-100 text-left"
+                    >
                       <FaUserCircle /> Perfil
-                    </Link>
+                    </button>
+                    {mobileProfileOpen && (
+                      <div className="px-4 py-2 text-sm text-gray-600 break-all">
+                        {user?.email || 'Sin email'}
+                      </div>
+                    )}
                     <button
                       onClick={logout}
                       className="flex items-center gap-2 w-full px-4 py-2 text-gray-700 hover:bg-gray-100 text-left"
@@ -98,10 +105,21 @@ export default function Navbar() {
               Cotizaciones
             </Link>
           </div>
-          <div className="flex items-center pr-2 gap-3">
-            <Link to="/perfil" className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-blue-600">
+          <div className="flex items-center pr-2 gap-3 relative">
+            <button
+              onClick={toggleProfile}
+              className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-blue-600"
+              aria-haspopup="true"
+              aria-expanded={profileOpen}
+            >
               <FaUserCircle /> Perfil
-            </Link>
+            </button>
+            {profileOpen && (
+              <div className="absolute right-2 top-12 w-64 bg-white rounded shadow-lg border z-50 p-3">
+                <div className="text-xs font-semibold text-gray-500 mb-1">Email</div>
+                <div className="text-sm text-gray-800 break-all">{user?.email || 'Sin email'}</div>
+              </div>
+            )}
             <button
               onClick={logout}
               className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-red-600"
