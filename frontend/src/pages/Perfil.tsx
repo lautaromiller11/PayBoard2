@@ -57,11 +57,11 @@ export default function Perfil() {
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 max-w-5xl">
         <h1 className="text-3xl font-bold mb-6 text-gray-800 dark:text-white">Mi Perfil</h1>
         
         {showSuccess && (
-          <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded-md">
+          <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded-md max-w-3xl mx-auto">
             <p className="flex items-center">
               <FaCheckCircle className="mr-2" /> 
               Cambios guardados correctamente
@@ -69,9 +69,9 @@ export default function Perfil() {
           </div>
         )}
         
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
           {/* Columna izquierda - Información personal */}
-          <div className="bg-white dark:bg-dark-bg-secondary rounded-lg shadow-md p-6">
+          <div className="bg-white dark:bg-dark-bg-secondary rounded-lg shadow-md p-6 max-w-md mx-auto w-full">
             <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">Información Personal</h2>
             
             <form onSubmit={handleSave}>
@@ -141,7 +141,7 @@ export default function Perfil() {
           </div>
           
           {/* Columna derecha - Enlace con Telegram */}
-          <div className="bg-white dark:bg-dark-bg-secondary rounded-lg shadow-md p-6">
+          <div className="bg-white dark:bg-dark-bg-secondary rounded-lg shadow-md p-6 max-w-md mx-auto w-full">
             <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white flex items-center">
               Enlace con Telegram 
               <FaTelegramPlane className="ml-2 text-blue-500" />
