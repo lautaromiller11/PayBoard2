@@ -51,7 +51,11 @@ export default function Register() {
             <ul className="mb-6 flex flex-col gap-3 text-base sm:text-lg text-gray-700 w-full">
               <li className="flex items-center gap-3 whitespace-nowrap"><FaWallet size={20} color="#2563eb" /> Registra y controla tus gastos e ingresos</li>
               <li className="flex items-center gap-3 whitespace-nowrap"><FaListAlt size={20} color="#22c55e" /> Organiza todos tus servicios y pagos</li>
-              <li className="flex items-center gap-3 whitespace-nowrap"><FaChartPie size={20} color="#a855f7" /> Visualiza tu balance financiero claramente</li>
+              <li className="flex items-center gap-3 whitespace-nowrap">
+                <span className="sm:hidden inline-flex"><FaChartPie size={22} color="#a855f7" /></span>
+                <span className="hidden sm:inline-flex"><FaChartPie size={28} color="#a855f7" /></span>
+                Visualiza tu balance financiero claramente
+              </li>
               <li className="flex items-center gap-3 whitespace-nowrap"><FaLink size={20} color="#eab308" /> Conecta automáticamente tus módulos</li>
               <li className="flex items-center gap-3 whitespace-nowrap"><FaCheckCircle size={20} color="#2563eb" /> <span className="font-bold">¡Es gratis!</span></li>
             </ul>

@@ -1,6 +1,6 @@
 import Footer from '../components/Footer';
 import NavbarHome from '../components/NavbarHome';
-import { FaMoneyCheckAlt, FaChartLine, FaLink, FaRobot } from 'react-icons/fa';
+import { FaMoneyCheckAlt, FaChartLine, FaLink, FaRobot, FaTelegramPlane } from 'react-icons/fa';
 
 export default function Home() {
     return (
@@ -36,6 +36,11 @@ export default function Home() {
                         <FaRobot className="text-yellow-500 text-3xl mb-3" />
                         <h2 className="text-xl font-bold mb-2">Registro Inteligente</h2>
                         <p className="text-gray-700">Simplifica el control de tus finanzas registrando tus gastos para ahorrar tiempo y evitar olvidos.</p>
+                    </div>
+                    <div className="bg-white rounded-xl shadow p-8 text-center flex flex-col items-center border">
+                        <FaTelegramPlane className="text-sky-500 text-3xl mb-3" />
+                        <h2 className="text-xl font-bold mb-2">Integración con Telegram</h2>
+                        <p className="text-gray-700">Carga gastos e ingresos al instante desde nuestro bot de Telegram para un registro más rápido.</p>
                     </div>
                 </div>
 
