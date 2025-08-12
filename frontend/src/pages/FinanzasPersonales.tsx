@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
-import { FaCalendarAlt } from 'react-icons/fa'
+import { useState, useEffect, useMemo } from 'react'
+import { type ComponentType } from 'react'
+import { FaCalendarAlt, FaArrowUp, FaArrowDown, FaMinus } from 'react-icons/fa'
 import { useSync } from '../context/SyncContext'
 import Layout from '../components/Layout'
 import TransactionForm from '../ui/TransactionForm'
@@ -16,6 +17,7 @@ export default function FinanzasPersonales() {
   const { finanzasNeedsSync, resetFinanzasSync } = useSync();
   const [transacciones, setTransacciones] = useState<Transaccion[]>([])
   const [resumen, setResumen] = useState<ResumenFinanciero | null>(null)
+  const [resumenPrevio, setResumenPrevio] = useState<ResumenFinanciero | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -51,14 +53,20 @@ export default function FinanzasPersonales() {
       setLoading(true)
       setError(null)
 
-      // Cargar transacciones y resumen en paralelo
-      const [transaccionesData, resumenData] = await Promise.all([
+      // Calcular mes/año anterior
+      const prevMes = mes === 1 ? 12 : mes - 1
+      const prevAño = mes === 1 ? año - 1 : año
+
+      // Cargar transacciones y resúmenes (mes actual y anterior) en paralelo
+      const [transaccionesData, resumenData, resumenPrevioData] = await Promise.all([
         fetchTransacciones(mes, año),
-        fetchResumenFinanciero(año, mes)
+        fetchResumenFinanciero(año, mes),
+        fetchResumenFinanciero(prevAño, prevMes)
       ])
 
       setTransacciones(transaccionesData)
       setResumen(resumenData)
+      setResumenPrevio(resumenPrevioData)
     } catch (err) {
       console.error('Error loading financial data:', err)
       setError('Error al cargar los datos financieros')
@@ -66,6 +74,46 @@ export default function FinanzasPersonales() {
       setLoading(false)
     }
   }
+
+  // Helpers para comparativas
+  type Trend = 'up' | 'down' | 'flat';
+  function getTrend(current: number, previous: number, invertColors = false): { pct: number; trend: Trend; label: string; colorClass: string; Icon: React.ComponentType<{ size?: number }> } {
+    let trend: Trend = 'flat';
+    let pct = 0;
+    if (previous === 0) {
+      if (current === 0) {
+        pct = 0;
+        trend = 'flat';
+      } else {
+        pct = 100;
+        trend = 'up';
+      }
+    } else {
+      pct = ((current - previous) / Math.abs(previous)) * 100;
+      trend = pct === 0 ? 'flat' : (pct > 0 ? 'up' : 'down');
+      pct = Math.abs(pct);
+    }
+
+    // Para gastos, invertimos la semántica de colores (más gasto es negativo)
+    const positive = invertColors ? trend === 'down' : trend === 'up';
+    const negative = invertColors ? trend === 'up' : trend === 'down';
+    const colorClass = trend === 'flat' ? 'text-gray-500' : positive ? 'text-green-600' : 'text-red-600';
+    const Icon = trend === 'flat' ? FaMinus : trend === 'up' ? FaArrowUp : FaArrowDown;
+
+    const label = `${trend === 'flat' ? '0.00' : pct.toFixed(2)}% respecto al mes anterior`;
+    return { pct, trend, label, colorClass, Icon };
+  }
+
+  const comparativas = useMemo(() => {
+    if (!resumen || !resumenPrevio) return null;
+    const c = resumen.totales;
+    const p = resumenPrevio.totales;
+    return {
+      ingresos: getTrend(c.ingresos, p.ingresos, false),
+      gastos: getTrend(c.gastos, p.gastos, true), // invertir colores en gastos
+      balance: getTrend(c.balance, p.balance, false)
+    };
+  }, [resumen, resumenPrevio]);
 
   // Manejar creación de nueva transacción
   const handleTransaccionCreated = (nuevaTransaccion: Transaccion) => {
@@ -187,12 +235,24 @@ export default function FinanzasPersonales() {
                     {resumen.totales && resumen.totales.ingresos !== undefined ? resumen.totales.ingresos.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' }) : 0}
                   </div>
                   <div className="text-sm text-green-700">Total Ingresos</div>
+                  {comparativas && (
+                    <div className={`mt-1 flex items-center justify-center gap-1 text-xs ${comparativas.ingresos.colorClass}`}>
+                      <comparativas.ingresos.Icon size={12} />
+                      <span>{comparativas.ingresos.label}</span>
+                    </div>
+                  )}
                 </div>
                 <div className="p-4 bg-red-50 rounded-lg">
                   <div className="text-2xl font-bold text-red-600">
                     {resumen.totales && resumen.totales.gastos !== undefined ? resumen.totales.gastos.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' }) : 0}
                   </div>
                   <div className="text-sm text-red-700">Total Gastos</div>
+                  {comparativas && (
+                    <div className={`mt-1 flex items-center justify-center gap-1 text-xs ${comparativas.gastos.colorClass}`}>
+                      <comparativas.gastos.Icon size={12} />
+                      <span>{comparativas.gastos.label}</span>
+                    </div>
+                  )}
                 </div>
                 <div className={`p-4 rounded-lg ${resumen.totales.balance >= 0 ? 'bg-blue-50' : 'bg-orange-50'}`}>
                   <div className={`text-2xl font-bold ${resumen.totales.balance >= 0 ? 'text-blue-600' : 'text-orange-600'}`}>
@@ -201,6 +261,12 @@ export default function FinanzasPersonales() {
                   <div className={`text-sm ${resumen.totales.balance >= 0 ? 'text-blue-700' : 'text-orange-700'}`}>
                     Balance {resumen.totales.balance >= 0 ? 'Positivo' : 'Negativo'}
                   </div>
+                  {comparativas && (
+                    <div className={`mt-1 flex items-center justify-center gap-1 text-xs ${comparativas.balance.colorClass}`}>
+                      <comparativas.balance.Icon size={12} />
+                      <span>{comparativas.balance.label}</span>
+                    </div>
+                  )}
                 </div>
               </div>
               {/* Mensaje motivacional */}
