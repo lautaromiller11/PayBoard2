@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import { api } from '../lib/api'
 
 type AuthContextType = {
   token: string | null
@@ -10,7 +11,7 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:4000/api'
+// API client centralizes base URL handling
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = useState<string | null>(() => localStorage.getItem('token'))
@@ -30,25 +31,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [user])
 
   const login = async (email: string, password: string) => {
-    const res = await fetch(`${API_BASE}/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
-    })
-    if (!res.ok) throw new Error('Credenciales inválidas')
-    const data = await res.json()
+    const { data } = await api.post('/auth/login', { email, password })
     setToken(data.token)
     setUser(data.user)
   }
 
   const register = async (email: string, password: string) => {
-    const res = await fetch(`${API_BASE}/auth/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
-    })
-    if (!res.ok) throw new Error('Registro inválido')
-    const data = await res.json()
+    const { data } = await api.post('/auth/register', { email, password })
     setToken(data.token)
     setUser(data.user)
   }

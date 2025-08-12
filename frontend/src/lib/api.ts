@@ -1,7 +1,19 @@
 import axios from 'axios'
 import { getAuthToken } from './auth'
 
-export const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:4000/api'
+// Normalize API base to avoid relative URLs (e.g., when missing protocol on Vercel)
+function normalizeApiBase(): string {
+  const raw = (import.meta.env.VITE_API_URL ?? '').toString().trim().replace(/^['"]|['"]$/g, '')
+  let base = raw || 'http://localhost:4000/api'
+  if (!/^https?:\/\//i.test(base)) {
+    base = `https://${base}`
+  }
+  // remove trailing slash
+  base = base.replace(/\/+$/, '')
+  return base
+}
+
+export const API_BASE = normalizeApiBase()
 
 export const api = axios.create({ baseURL: API_BASE })
 
