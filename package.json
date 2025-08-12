@@ -8,7 +8,6 @@
     "dev:frontend": "cd frontend && npm run dev",
     "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
     "setup": "npm run install:all && cd backend && npm run prisma:generate && npm run prisma:migrate",
-    "build": "cd frontend && npm run build",
     "start": "cd backend && npm start",
     "dev:backend:win": "cd backend; npm run dev",
     "dev:frontend:win": "cd frontend; npm run dev",
