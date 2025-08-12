@@ -9,11 +9,30 @@ const transaccionesRoutes = require('./routes/transacciones');
 
 const app = express();
 
-// Configuración dinámica de CORS
-const allowedOrigin = process.env.NODE_ENV === 'production'
-  ? process.env.CORS_ORIGIN || 'https://pay-board-7ph9.vercel.app'
-  : process.env.CORS_ORIGIN || 'https://pay-board-7ph9.vercel.app';
-app.use(cors({ origin: allowedOrigin }));
+// Configuración dinámica de CORS con lista blanca
+const rawOrigins = process.env.CORS_ORIGINS || process.env.CORS_ORIGIN || ''
+const whitelist = rawOrigins
+  .split(',')
+  .map(s => s.trim())
+  .filter(Boolean)
+
+// En desarrollo, permitir localhost por defecto
+if (process.env.NODE_ENV !== 'production') {
+  if (!whitelist.includes('http://localhost:5173')) whitelist.push('http://localhost:5173')
+  if (!whitelist.includes('http://127.0.0.1:5173')) whitelist.push('http://127.0.0.1:5173')
+}
+
+app.use(cors({
+  origin(origin, callback) {
+    // Permitir requests sin origen (curl, healthchecks)
+    if (!origin) return callback(null, true)
+    if (whitelist.includes(origin)) return callback(null, true)
+    return callback(new Error(`Not allowed by CORS: ${origin}`))
+  },
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  optionsSuccessStatus: 200
+}))
 app.use(express.json());
 app.use(morgan('dev'));
 
