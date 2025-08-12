@@ -19,7 +19,7 @@ export default function FinanzasPersonales() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Estados para modales
+  // Estados para modales 1
   const [modalIngresoOpen, setModalIngresoOpen] = useState(false)
   const [modalGastoOpen, setModalGastoOpen] = useState(false)
 
