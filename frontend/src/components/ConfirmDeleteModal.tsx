@@ -12,12 +12,12 @@ export default function ConfirmDeleteModal({ open, title, description, onConfirm
     if (!open) return null
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
-            <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-sm border">
-                <h2 className="text-xl font-bold text-gray-900 mb-2">{title || '¿Eliminar elemento?'}</h2>
-                <p className="text-gray-700 mb-6">{description || 'Esta acción no se puede deshacer. ¿Deseas continuar?'}</p>
+            <div className="bg-white dark:bg-dark-bg-secondary rounded-xl shadow-lg p-6 w-full max-w-sm border dark:border-dark-600">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{title || '¿Eliminar elemento?'}</h2>
+                <p className="text-gray-700 dark:text-gray-300 mb-6">{description || 'Esta acción no se puede deshacer. ¿Deseas continuar?'}</p>
                 <div className="flex gap-3 justify-end">
                     <button
-                        className="px-4 py-2 rounded-lg bg-gray-200 text-gray-800 hover:bg-gray-300 font-medium"
+                        className="px-4 py-2 rounded-lg bg-gray-200 dark:bg-dark-bg-accent text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-dark-bg-hover font-medium"
                         onClick={onCancel}
                     >
                         Cancelar

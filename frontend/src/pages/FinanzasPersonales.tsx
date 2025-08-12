@@ -165,12 +165,12 @@ export default function FinanzasPersonales() {
         {/* Header */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Finanzas Personales</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Finanzas Personales</h1>
           </div>
           <div className="flex gap-2 items-center w-full sm:w-auto">
             {/* Calendario con icono, abre modal visual */}
             <button
-              className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg text-blue-600 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+              className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-dark-bg-secondary border border-gray-300 dark:border-dark-600 rounded-lg text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-dark-bg-accent focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
               onClick={() => setCalendarOpen(true)}
               aria-label="Seleccionar mes"
             >
@@ -192,8 +192,8 @@ export default function FinanzasPersonales() {
             {/* Modal calendario */}
             {calendarOpen && (
               <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
-                <div className="bg-white rounded-lg shadow-lg p-6 w-80 max-w-full flex flex-col items-center">
-                  <h2 className="text-lg font-semibold mb-4 text-gray-800">Selecciona el mes</h2>
+                <div className="bg-white dark:bg-dark-bg-secondary rounded-lg shadow-lg p-6 w-80 max-w-full flex flex-col items-center">
+                  <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">Selecciona el mes</h2>
                   <input
                     type="month"
                     value={mesSeleccionado}
@@ -201,11 +201,11 @@ export default function FinanzasPersonales() {
                       setMesSeleccionado(e.target.value);
                       setCalendarOpen(false);
                     }}
-                    className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4 w-full"
+                    className="border border-gray-300 dark:border-dark-600 dark:bg-dark-bg-primary dark:text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4 w-full"
                   />
                   <button
                     onClick={() => setCalendarOpen(false)}
-                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
+                    className="px-4 py-2 bg-gray-200 dark:bg-dark-700 text-gray-700 dark:text-gray-200 rounded hover:bg-gray-300 dark:hover:bg-dark-600 transition-colors"
                   >
                     Cancelar
                   </button>
@@ -222,19 +222,19 @@ export default function FinanzasPersonales() {
           <div className="mb-6">
             {/* Título de análisis financiero arriba del resumen del mes */}
             <div className="text-center mb-4">
-              <h3 className="text-xl font-semibold text-gray-900 capitalize">
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white capitalize">
                 Análisis Financiero - {new Date(año, mes - 1).toLocaleDateString('es-ES', { month: 'long' })} {año}
               </h3>
             </div>
             {/* Resumen textual */}
-            <div className="bg-white p-6 rounded-lg shadow-sm border mb-6">
-              <h4 className="text-lg font-medium text-gray-900 mb-4">Resumen del Mes</h4>
+            <div className="bg-white dark:bg-dark-bg-secondary p-6 rounded-lg shadow-sm border dark:border-dark-600 mb-6 transition-colors">
+              <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Resumen del Mes</h4>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-                <div className="p-4 bg-green-50 rounded-lg">
-                  <div className="text-2xl font-bold text-green-600">
+                <div className="p-4 bg-green-50 dark:bg-green-950/30 rounded-lg">
+                  <div className="text-2xl font-bold text-green-600 dark:text-green-500">
                     {resumen.totales && resumen.totales.ingresos !== undefined ? resumen.totales.ingresos.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' }) : 0}
                   </div>
-                  <div className="text-sm text-green-700">Total Ingresos</div>
+                  <div className="text-sm text-green-700 dark:text-green-500">Total Ingresos</div>
                   {comparativas && (
                     <div className={`mt-1 flex items-center justify-center gap-1 text-xs ${comparativas.ingresos.colorClass}`}>
                       <comparativas.ingresos.Icon size={12} />
@@ -242,11 +242,11 @@ export default function FinanzasPersonales() {
                     </div>
                   )}
                 </div>
-                <div className="p-4 bg-red-50 rounded-lg">
-                  <div className="text-2xl font-bold text-red-600">
+                <div className="p-4 bg-red-50 dark:bg-red-950/30 rounded-lg">
+                  <div className="text-2xl font-bold text-red-600 dark:text-red-500">
                     {resumen.totales && resumen.totales.gastos !== undefined ? resumen.totales.gastos.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' }) : 0}
                   </div>
-                  <div className="text-sm text-red-700">Total Gastos</div>
+                  <div className="text-sm text-red-700 dark:text-red-500">Total Gastos</div>
                   {comparativas && (
                     <div className={`mt-1 flex items-center justify-center gap-1 text-xs ${comparativas.gastos.colorClass}`}>
                       <comparativas.gastos.Icon size={12} />
@@ -254,11 +254,11 @@ export default function FinanzasPersonales() {
                     </div>
                   )}
                 </div>
-                <div className={`p-4 rounded-lg ${resumen.totales.balance >= 0 ? 'bg-blue-50' : 'bg-orange-50'}`}>
-                  <div className={`text-2xl font-bold ${resumen.totales.balance >= 0 ? 'text-blue-600' : 'text-orange-600'}`}>
+                <div className={`p-4 rounded-lg ${resumen.totales.balance >= 0 ? 'bg-blue-50 dark:bg-blue-950/30' : 'bg-orange-50 dark:bg-orange-950/30'}`}>
+                  <div className={`text-2xl font-bold ${resumen.totales.balance >= 0 ? 'text-blue-600 dark:text-blue-500' : 'text-orange-600 dark:text-orange-500'}`}>
                     {resumen.totales && resumen.totales.balance !== undefined ? resumen.totales.balance.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' }) : 0}
                   </div>
-                  <div className={`text-sm ${resumen.totales.balance >= 0 ? 'text-blue-700' : 'text-orange-700'}`}>
+                  <div className={`text-sm ${resumen.totales.balance >= 0 ? 'text-blue-700 dark:text-blue-500' : 'text-orange-700 dark:text-orange-500'}`}>
                     Balance {resumen.totales.balance >= 0 ? 'Positivo' : 'Negativo'}
                   </div>
                   {comparativas && (
@@ -270,8 +270,8 @@ export default function FinanzasPersonales() {
                 </div>
               </div>
               {/* Mensaje motivacional */}
-              <div className="mt-4 p-3 bg-gray-50 rounded-lg text-center">
-                <div className="text-sm text-gray-600">
+              <div className="mt-4 p-3 bg-gray-50 dark:bg-dark-bg-accent rounded-lg text-center">
+                <div className="text-sm text-gray-600 dark:text-gray-300">
                   {resumen.totales.balance >= 0
                     ? '¡Excelente! Tienes un balance positivo este mes. 💰'
                     : 'Considera revisar tus gastos para mejorar tu balance. 📊'

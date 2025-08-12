@@ -22,14 +22,14 @@ export default function Notification({ message, type, onClose, duration = 5000 }
   const getTypeStyles = () => {
     switch (type) {
       case 'success':
-        return 'bg-green-100 border-green-400 text-green-700'
+        return 'bg-green-100 dark:bg-green-900/30 border-green-400 dark:border-green-800 text-green-700 dark:text-green-400'
       case 'error':
-        return 'bg-red-100 border-red-400 text-red-700'
+        return 'bg-red-100 dark:bg-red-900/30 border-red-400 dark:border-red-800 text-red-700 dark:text-red-400'
       case 'warning':
-        return 'bg-yellow-100 border-yellow-400 text-yellow-700'
+        return 'bg-yellow-100 dark:bg-yellow-900/30 border-yellow-400 dark:border-yellow-800 text-yellow-700 dark:text-yellow-400'
       case 'info':
       default:
-        return 'bg-blue-100 border-blue-400 text-blue-700'
+        return 'bg-blue-100 dark:bg-blue-900/30 border-blue-400 dark:border-blue-800 text-blue-700 dark:text-blue-400'
     }
   }
 
@@ -49,9 +49,8 @@ export default function Notification({ message, type, onClose, duration = 5000 }
 
   return (
     <div
-      className={`fixed top-4 right-4 z-50 max-w-sm w-full transition-all duration-300 ${
-        isVisible ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'
-      }`}
+      className={`fixed top-4 right-4 z-50 max-w-sm w-full transition-all duration-300 ${isVisible ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'
+        }`}
     >
       <div className={`border-l-4 p-4 rounded shadow-lg ${getTypeStyles()}`}>
         <div className="flex items-center justify-between">

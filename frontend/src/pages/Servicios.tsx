@@ -16,9 +16,9 @@ const columnTitles: Record<ColumnKey, string> = {
 }
 
 const columnColors: Record<ColumnKey, string> = {
-  por_pagar: 'bg-yellow-50 border-yellow-200',
-  pagado: 'bg-green-50 border-green-200',
-  vencido: 'bg-red-50 border-red-200'
+  por_pagar: 'bg-yellow-50 dark:bg-yellow-950/30 border-yellow-200 dark:border-yellow-900/50',
+  pagado: 'bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-900/50',
+  vencido: 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-900/50'
 }
 
 export default function Servicios() {
@@ -176,7 +176,7 @@ export default function Servicios() {
       <Layout>
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center justify-center h-64">
-            <div className="text-lg text-gray-600">Cargando servicios...</div>
+            <div className="text-lg text-gray-600 dark:text-gray-400">Cargando servicios...</div>
           </div>
         </div>
       </Layout>
@@ -188,7 +188,7 @@ export default function Servicios() {
       <Layout>
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center justify-center h-64">
-            <div className="text-lg text-red-600">{error}</div>
+            <div className="text-lg text-red-600 dark:text-red-500">{error}</div>
           </div>
         </div>
       </Layout>
@@ -201,13 +201,13 @@ export default function Servicios() {
         {/* Header - Responsive, mobile friendly */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
           <div className="flex flex-col gap-1">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight">Gestión de Servicios</h1>
-            <p className="text-gray-600 text-base sm:text-lg">Organiza y gestiona tus servicios</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white leading-tight">Gestión de Servicios</h1>
+            <p className="text-gray-600 dark:text-gray-300 text-base sm:text-lg">Organiza y gestiona tus servicios</p>
           </div>
           <div className="flex gap-2 items-center w-full sm:w-auto">
             {/* Calendario con icono, abre modal visual */}
             <button
-              className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg text-blue-600 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm ml-2 sm:ml-0"
+              className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-dark-bg-secondary border border-gray-300 dark:border-gray-600 rounded-lg text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-dark-bg-accent focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm ml-2 sm:ml-0"
               onClick={() => setCalendarOpen(true)}
               aria-label="Seleccionar mes"
             >
@@ -224,8 +224,8 @@ export default function Servicios() {
             {/* Modal calendario */}
             {calendarOpen && (
               <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
-                <div className="bg-white rounded-lg shadow-lg p-6 w-80 max-w-full flex flex-col items-center">
-                  <h2 className="text-lg font-semibold mb-4 text-gray-800">Selecciona el mes</h2>
+                <div className="bg-white dark:bg-dark-bg-secondary rounded-lg shadow-lg p-6 w-80 max-w-full flex flex-col items-center">
+                  <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">Selecciona el mes</h2>
                   <input
                     type="month"
                     value={mesSeleccionado}
@@ -233,11 +233,11 @@ export default function Servicios() {
                       setMesSeleccionado(e.target.value);
                       setCalendarOpen(false);
                     }}
-                    className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4 w-full"
+                    className="border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-bg-input text-gray-900 dark:text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4 w-full"
                   />
                   <button
                     onClick={() => setCalendarOpen(false)}
-                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
+                    className="px-4 py-2 bg-gray-200 dark:bg-dark-bg-accent text-gray-700 dark:text-gray-200 rounded hover:bg-gray-300 dark:hover:bg-dark-bg-hover transition-colors"
                   >
                     Cancelar
                   </button>
@@ -248,7 +248,7 @@ export default function Servicios() {
         </div>
 
         {/* Tablero Kanban - Responsive */}
-        <div className="bg-white rounded-xl shadow-sm border p-3 sm:p-6">
+        <div className="bg-white dark:bg-dark-bg-secondary rounded-xl shadow-sm border dark:border-dark-600 p-3 sm:p-6">
           <DragDropContext onDragEnd={onDragEnd}>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {(['por_pagar', 'vencido', 'pagado'] as ColumnKey[]).map(columnId => (
@@ -258,15 +258,15 @@ export default function Servicios() {
                       ref={provided.innerRef}
                       {...provided.droppableProps}
                       className={`rounded-lg border-2 border-dashed p-4 min-h-[400px] transition-colors ${snapshot.isDraggingOver
-                        ? 'border-blue-400 bg-blue-50'
+                        ? 'border-blue-400 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-700/50'
                         : columnColors[columnId]
                         }`}
                     >
-                      <h3 className="font-semibold text-base sm:text-lg mb-4 text-gray-800">
-                        {columnTitles[columnId]} <span className="font-normal text-gray-500">({grouped[columnId]?.length ?? 0})</span>
+                      <h3 className="font-semibold text-base sm:text-lg mb-4 text-gray-600 dark:text-gray-300">
+                        {columnTitles[columnId]} <span className="font-normal text-gray-500 dark:text-gray-400">({grouped[columnId]?.length ?? 0})</span>
                       </h3>
 
-                      <div className="space-y-3">
+                      <div className="space-y-3 custom-scrollbar max-h-[calc(80vh-6rem)] overflow-y-auto pr-1.5">
                         {grouped[columnId]?.map((servicio, index) => (
                           <Draggable
                             draggableId={String(servicio.id)}
@@ -278,20 +278,20 @@ export default function Servicios() {
                                 ref={dragProvided.innerRef}
                                 {...dragProvided.draggableProps}
                                 {...dragProvided.dragHandleProps}
-                                className="p-3 sm:p-4 rounded-lg bg-white border shadow-sm hover:shadow transition-shadow"
+                                className="p-3 sm:p-4 rounded-lg bg-white dark:bg-dark-bg-secondary border dark:border-dark-600 shadow-sm hover:shadow transition-shadow"
                               >
                                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                                   <div>
-                                    <div className="font-medium text-gray-900 text-base sm:text-lg">{servicio.nombre}</div>
-                                    <div className="text-xs sm:text-sm text-gray-600">Vence: {formatDate(servicio.vencimiento)}</div>
+                                    <div className="font-medium text-gray-900 dark:text-white text-base sm:text-lg">{servicio.nombre}</div>
+                                    <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Vence: {formatDate(servicio.vencimiento)}</div>
                                     {servicio.estado === 'vencido' && (
-                                      <div className="mt-1 inline-block text-xs px-2 py-1 rounded bg-red-100 text-red-700 border border-red-200">
+                                      <div className="mt-1 inline-block text-xs px-2 py-1 rounded bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800/50">
                                         Vencido
                                       </div>
                                     )}
                                   </div>
                                   <div className="text-right">
-                                    <div className="text-base sm:text-lg font-semibold text-gray-900">${Number(servicio.monto).toLocaleString('es-AR')}</div>
+                                    <div className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">${Number(servicio.monto).toLocaleString('es-AR')}</div>
                                   </div>
                                 </div>
                                 <div className="flex flex-wrap gap-2 mt-2 sm:mt-3">
@@ -306,14 +306,14 @@ export default function Servicios() {
                                   <button
                                     type="button"
                                     onClick={() => handleDeleteClick(servicio.id)}
-                                    className="px-3 py-1.5 text-xs sm:text-sm text-gray-500 hover:text-red-600"
+                                    className="px-3 py-1.5 text-xs sm:text-sm text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-500"
                                   >
                                     Eliminar
                                   </button>
                                   <button
                                     type="button"
                                     onClick={() => { setEditServicio(servicio); setEditModalOpen(true); }}
-                                    className="px-3 py-1.5 text-xs sm:text-sm text-gray-500 hover:text-blue-600"
+                                    className="px-3 py-1.5 text-xs sm:text-sm text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-500"
                                   >
                                     Editar
                                   </button>

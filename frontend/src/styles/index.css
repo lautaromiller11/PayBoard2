@@ -2,8 +2,150 @@
 @tailwind components;
 @tailwind utilities;
 
-html, body, #root {
+:root {
+  /* Light mode variables */
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #f9fafb;
+  --color-bg-accent: #f3f4f6;
+  --color-text-primary: #111827;
+  --color-text-secondary: #4b5563;
+  --color-border: #e5e7eb;
+  --color-shadow: rgba(0, 0, 0, 0.1);
+}
+
+:root[data-theme="dark"] {
+  /* Dark mode variables */
+  --color-bg-primary: #1e1e2e;
+  --color-bg-secondary: #292a3a;
+  --color-bg-accent: #353545;
+  --color-text-primary: #f9fafb;
+  --color-text-secondary: #d1d5db;
+  --color-border: #4b5563;
+  --color-shadow: rgba(0, 0, 0, 0.5);
+}
+
+html,
+body,
+#root {
   height: 100%;
 }
 
+/* Add transition for theme switching */
+* {
+  transition-property: color, background-color, border-color, box-shadow;
+  transition-duration: 200ms;
+  transition-timing-function: ease-out;
+}
 
+/* Dark mode calendar and select styling */
+.dark input[type="date"],
+.dark input[type="month"],
+.dark select,
+.dark input[type="datetime-local"] {
+  color-scheme: dark;
+  background-color: #1e1e2e;
+  border-color: #4b5563;
+}
+
+/* Ensure calendar popup and select dropdown have dark styling */
+.dark ::-webkit-calendar-picker-indicator {
+  filter: invert(0.8) brightness(1.7) saturate(0.8);
+  opacity: 0.9;
+}
+
+/* Style calendar days and other elements */
+.dark input[type="date"]::-webkit-datetime-edit,
+.dark input[type="month"]::-webkit-datetime-edit {
+  color: #d1d5db;
+}
+
+/* Custom styles for calendar input in dark mode */
+.dark .calendar-input::-webkit-calendar-picker-indicator {
+  filter: invert(1) brightness(1.8) saturate(0.3);
+  opacity: 0.9;
+  padding-right: 4px;
+  cursor: pointer;
+  background-color: transparent;
+}
+
+/* Calendar input focus styles */
+.dark .calendar-input:hover::-webkit-calendar-picker-indicator,
+.dark .calendar-input:focus::-webkit-calendar-picker-indicator {
+  filter: invert(0.8) brightness(2) saturate(0.8) hue-rotate(190deg);
+  opacity: 1;
+}
+
+/* Custom scrollbar styles - Light Mode */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a0a0a0;
+}
+
+/* Custom scrollbar styles - Dark Mode */
+.dark ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: #353545;
+  border-radius: 4px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #4b5563;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #606873;
+}
+
+/* Apply custom scrollbar to all elements with this class */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  /* Firefox */
+  scrollbar-color: var(--color-bg-accent) var(--color-bg-secondary);
+  /* Firefox */
+}
+
+/* Global theme classes */
+.theme-bg-primary {
+  background-color: var(--color-bg-primary);
+}
+
+.theme-bg-secondary {
+  background-color: var(--color-bg-secondary);
+}
+
+.theme-text-primary {
+  color: var(--color-text-primary);
+}
+
+.theme-text-secondary {
+  color: var(--color-text-secondary);
+}
+
+.theme-border {
+  border-color: var(--color-border);
+}
+
+.theme-shadow {
+  box-shadow: 0 1px 3px var(--color-shadow);
+}

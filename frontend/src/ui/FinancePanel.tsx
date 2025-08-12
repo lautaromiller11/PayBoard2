@@ -23,20 +23,20 @@ export default function FinancePanel({ servicios }: { servicios: Servicio[] }) {
   ]
 
   return (
-    <div className="bg-white rounded-xl shadow p-4">
-      <h2 className="text-xl font-semibold mb-4">Finanzas personales</h2>
+    <div className="bg-white dark:bg-dark-bg-secondary rounded-xl shadow dark:shadow-lg p-4 transition-colors">
+      <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Finanzas personales</h2>
       <div className="grid grid-cols-2 gap-4 text-sm">
         <div>
-          <div className="text-gray-600">Ingresos</div>
-          <div className="text-2xl font-semibold">${ingresos.toLocaleString()}</div>
+          <div className="text-gray-600 dark:text-gray-400">Ingresos</div>
+          <div className="text-2xl font-semibold text-gray-900 dark:text-white">${ingresos.toLocaleString()}</div>
         </div>
         <div>
-          <div className="text-gray-600">Egresos</div>
-          <div className="text-2xl font-semibold">${egresos.toLocaleString()}</div>
+          <div className="text-gray-600 dark:text-gray-400">Egresos</div>
+          <div className="text-2xl font-semibold text-gray-900 dark:text-white">${egresos.toLocaleString()}</div>
         </div>
         <div>
-          <div className="text-gray-600">Balance</div>
-          <div className="text-2xl font-semibold">${(ingresos - egresos).toLocaleString()}</div>
+          <div className="text-gray-600 dark:text-gray-400">Balance</div>
+          <div className="text-2xl font-semibold text-gray-900 dark:text-white">${(ingresos - egresos).toLocaleString()}</div>
         </div>
       </div>
       <div className="mt-6 grid grid-cols-1 gap-6">
@@ -56,10 +56,10 @@ export default function FinancePanel({ servicios }: { servicios: Servicio[] }) {
         <div className="h-56">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={barData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
+              <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.5} />
+              <XAxis dataKey="name" stroke="#9ca3af" />
+              <YAxis stroke="#9ca3af" />
+              <Tooltip contentStyle={{ backgroundColor: "var(--color-bg-secondary)", color: "var(--color-text-primary)", borderColor: "var(--color-border)" }} />
               <Legend />
               <Bar dataKey="ingresos" fill="#2563eb" />
               <Bar dataKey="egresos" fill="#d1d5db" />
