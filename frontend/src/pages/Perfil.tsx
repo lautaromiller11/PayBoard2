@@ -71,7 +71,7 @@ export default function Perfil() {
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-5xl">
           {/* Columna izquierda - Información personal */}
-          <div className="bg-white dark:bg-dark-900/20 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+          <div className="bg-white dark:bg-dark-900/20 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700 h-auto self-start">
             <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">Información personal</h2>
             
             <form onSubmit={handleSave}>
@@ -141,18 +141,20 @@ export default function Perfil() {
           </div>
           
           {/* Columna derecha - Enlace con Telegram */}
-          <div className="bg-white dark:bg-dark-900/20 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+          <div className="bg-white dark:bg-dark-900/20 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700 h-auto self-start">
             <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white flex items-center">
               Enlace con Telegram 
               <FaTelegramPlane className="ml-2 text-blue-500" />
             </h2>
             
-            <div className="mb-4 flex items-center">
-              <div className={`w-3 h-3 rounded-full ${botLinked ? 'bg-green-500' : 'bg-red-500'}`}></div>
-              <span className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                {botLinked ? 'Bot enlazado' : 'Bot no enlazado'}
-              </span>
-            </div>
+            {botLinked && (
+              <div className="mb-4 flex items-center">
+                <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                <span className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Bot enlazado
+                </span>
+              </div>
+            )}
             
             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/30 rounded-lg p-5 mb-6">
               <h3 className="text-lg font-medium text-blue-600 dark:text-blue-400 mb-3">
@@ -176,10 +178,13 @@ export default function Perfil() {
               
               <div className="mt-4 pt-4 border-t border-blue-200 dark:border-blue-800/30">
                 <h4 className="font-medium text-blue-600 dark:text-blue-400 mb-2">Beneficios:</h4>
-                <ul className="list-disc pl-5 space-y-1 text-gray-700 dark:text-gray-300">
-                  <li>Recibe notificaciones de pagos pendientes</li>
-                  <li>Consulta tus finanzas desde Telegram</li>
-                  <li>Obtén recordatorios de vencimientos</li>
+                <ul className="list-disc pl-5 space-y-2 text-gray-700 dark:text-gray-300">
+                  <li><span className="font-medium">Registra gastos e ingresos al instante:</span> sin formularios largos ni pasos innecesarios.</li>
+                  <li><span className="font-medium">Ahorra tiempo en la gestión de tus finanzas:</span> todo en un solo mensaje.</li>
+                  <li><span className="font-medium">Interfaz conversacional:</span> hablás como si chatearas con un amigo.</li>
+                  <li><span className="font-medium">Categoriza automáticamente</span> tus transacciones según el mensaje.</li>
+                  <li><span className="font-medium">Acceso 24/7 desde Telegram:</span> no necesitas abrir una app o página web.</li>
+                  <li><span className="font-medium">Mayor control de tu dinero</span> gracias a registros rápidos y precisos.</li>
                 </ul>
               </div>
             </div>
