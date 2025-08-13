@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 
+const setupSecurityMiddleware = require('./middleware/security');
 const authRoutes = require('./routes/auth');
 const serviciosRoutes = require('./routes/servicios');
 const pagosRoutes = require('./routes/pagos');
@@ -35,6 +36,9 @@ app.use(cors({
 }))
 app.use(express.json());
 app.use(morgan('dev'));
+
+// Aplicar middleware de seguridad
+setupSecurityMiddleware(app);
 
 // Health check
 app.get('/api/health', (req, res) => {
