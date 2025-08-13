@@ -58,10 +58,10 @@ export default function Perfil() {
   return (
     <Layout>
       <div className="container mx-auto px-4 py-8 max-w-5xl">
-        <h1 className="text-3xl font-bold mb-6 text-gray-800 dark:text-white">Mi Perfil</h1>
+        <h1 className="text-3xl font-bold mb-8 text-gray-800 dark:text-white">Perfil</h1>
         
         {showSuccess && (
-          <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded-md max-w-3xl mx-auto">
+          <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded-md max-w-5xl">
             <p className="flex items-center">
               <FaCheckCircle className="mr-2" /> 
               Cambios guardados correctamente
@@ -69,10 +69,10 @@ export default function Perfil() {
           </div>
         )}
         
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-5xl">
           {/* Columna izquierda - Información personal */}
-          <div className="bg-white dark:bg-dark-bg-secondary rounded-lg shadow-md p-6 max-w-md mx-auto w-full">
-            <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">Información Personal</h2>
+          <div className="bg-white dark:bg-dark-900/20 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+            <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">Información personal</h2>
             
             <form onSubmit={handleSave}>
               <div className="mb-4">
@@ -83,7 +83,7 @@ export default function Perfil() {
                   type="text"
                   value={user?.email || ''}
                   disabled
-                  className="w-full px-3 py-2 bg-gray-100 dark:bg-dark-bg-accent border border-gray-300 dark:border-dark-600 rounded-md text-gray-800 dark:text-gray-200"
+                  className="w-full px-3 py-2 bg-gray-100 dark:bg-dark-900/30 border border-gray-300 dark:border-gray-700 rounded-md text-gray-800 dark:text-gray-200"
                 />
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">El correo electrónico no se puede modificar</p>
               </div>
@@ -98,7 +98,7 @@ export default function Perfil() {
                   name="nombre"
                   value={profile.nombre}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 bg-white dark:bg-dark-bg-accent border border-gray-300 dark:border-dark-600 rounded-md text-gray-800 dark:text-gray-200 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 bg-white dark:bg-dark-900/30 border border-gray-300 dark:border-gray-700 rounded-md text-gray-800 dark:text-gray-200 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
               
@@ -112,36 +112,36 @@ export default function Perfil() {
                   name="apellido"
                   value={profile.apellido}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 bg-white dark:bg-dark-bg-accent border border-gray-300 dark:border-dark-600 rounded-md text-gray-800 dark:text-gray-200 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 bg-white dark:bg-dark-900/30 border border-gray-300 dark:border-gray-700 rounded-md text-gray-800 dark:text-gray-200 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
               
               <div className="mb-6">
                 <label className="block text-gray-700 dark:text-gray-300 text-sm font-medium mb-1" htmlFor="fechaNacimiento">
-                  Fecha de Nacimiento
+                  Fecha de nacimiento
                 </label>
                 <input
-                  type="date"
+                  type="text"
                   id="fechaNacimiento"
                   name="fechaNacimiento"
                   value={profile.fechaNacimiento}
                   onChange={handleChange}
-                  max={new Date().toISOString().split('T')[0]}
-                  className="w-full px-3 py-2 bg-white dark:bg-dark-bg-accent border border-gray-300 dark:border-dark-600 rounded-md text-gray-800 dark:text-gray-200 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="dd/mm/aaaa"
+                  className="w-full px-3 py-2 bg-white dark:bg-dark-900/30 border border-gray-300 dark:border-gray-700 rounded-md text-gray-800 dark:text-gray-200 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
               
               <button
                 type="submit"
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors"
+                className="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-2 px-4 rounded-md focus:outline-none transition-colors"
               >
-                Guardar Cambios
+                Guardar cambios
               </button>
             </form>
           </div>
           
           {/* Columna derecha - Enlace con Telegram */}
-          <div className="bg-white dark:bg-dark-bg-secondary rounded-lg shadow-md p-6 max-w-md mx-auto w-full">
+          <div className="bg-white dark:bg-dark-900/20 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
             <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white flex items-center">
               Enlace con Telegram 
               <FaTelegramPlane className="ml-2 text-blue-500" />
@@ -150,21 +150,21 @@ export default function Perfil() {
             <div className="mb-4 flex items-center">
               <div className={`w-3 h-3 rounded-full ${botLinked ? 'bg-green-500' : 'bg-red-500'}`}></div>
               <span className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                {botLinked ? 'Bot enlazado' : 'No enlazado'}
+                {botLinked ? 'Bot enlazado' : 'Bot no enlazado'}
               </span>
             </div>
             
-            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-lg p-4 mb-6">
-              <h3 className="text-lg font-medium text-blue-800 dark:text-blue-300 mb-2">
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/30 rounded-lg p-5 mb-6">
+              <h3 className="text-lg font-medium text-blue-600 dark:text-blue-400 mb-3">
                 ¿Cómo enlazar tu cuenta?
               </h3>
               
-              <ol className="list-decimal pl-5 space-y-2">
+              <ol className="list-decimal pl-6 space-y-3">
                 <li className="text-gray-700 dark:text-gray-300">
-                  Busca el bot <span className="font-mono bg-gray-100 dark:bg-dark-bg-accent px-1 rounded">@PayBoardBot</span> en Telegram
+                  Busca el bot <span className="font-mono bg-white dark:bg-dark-bg-accent px-1 rounded border border-blue-100 dark:border-blue-800/30">@PayBoardBot</span> en Telegram
                 </li>
                 <li className="text-gray-700 dark:text-gray-300">
-                  Inicia la conversación con el comando <span className="font-mono bg-gray-100 dark:bg-dark-bg-accent px-1 rounded">/start</span>
+                  Inicia la conversación con el comando <span className="font-mono bg-white dark:bg-dark-bg-accent px-1 rounded border border-blue-100 dark:border-blue-800/30">/start</span>
                 </li>
                 <li className="text-gray-700 dark:text-gray-300">
                   El bot te pedirá que inicies sesión con tu cuenta
@@ -173,24 +173,24 @@ export default function Perfil() {
                   Una vez autenticado, tu cuenta quedará vinculada automáticamente
                 </li>
               </ol>
-            </div>
-            
-            <div className="space-y-2">
-              <h4 className="font-medium text-gray-800 dark:text-white">Beneficios:</h4>
-              <ul className="list-disc pl-5 space-y-1 text-gray-700 dark:text-gray-300">
-                <li>Recibe notificaciones de pagos pendientes</li>
-                <li>Consulta tus finanzas desde Telegram</li>
-                <li>Obtén recordatorios de vencimientos</li>
-              </ul>
+              
+              <div className="mt-4 pt-4 border-t border-blue-200 dark:border-blue-800/30">
+                <h4 className="font-medium text-blue-600 dark:text-blue-400 mb-2">Beneficios:</h4>
+                <ul className="list-disc pl-5 space-y-1 text-gray-700 dark:text-gray-300">
+                  <li>Recibe notificaciones de pagos pendientes</li>
+                  <li>Consulta tus finanzas desde Telegram</li>
+                  <li>Obtén recordatorios de vencimientos</li>
+                </ul>
+              </div>
             </div>
             
             <a
               href="https://t.me/PayBoardBot"
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-6 block w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors"
+              className="mt-6 block w-full bg-purple-600 hover:bg-purple-500 text-white font-medium py-2 px-4 rounded-md text-center focus:outline-none transition-colors"
             >
-              Abrir Telegram y Conectar
+              Abrir Telegram y conectar
             </a>
           </div>
         </div>

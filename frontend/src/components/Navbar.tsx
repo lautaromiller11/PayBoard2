@@ -116,7 +116,7 @@ export default function Navbar() {
             </button>
             <Link
               to="/perfil"
-              className={`flex items-center gap-2 px-3 py-2 text-sm font-medium transition-colors ${isActive('/perfil')}`}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap flex items-center gap-2 ${isActive('/perfil')}`}
             >
               <FaUserCircle /> Perfil
             </Link>
