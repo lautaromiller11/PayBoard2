@@ -6,6 +6,7 @@ const authRoutes = require('./routes/auth');
 const serviciosRoutes = require('./routes/servicios');
 const pagosRoutes = require('./routes/pagos');
 const transaccionesRoutes = require('./routes/transacciones');
+const calcImpuestosRoutes = require('./routes/calcImpuestos');
 
 const app = express();
 
@@ -51,6 +52,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/servicios', serviciosRoutes);
 app.use('/api/pagos', pagosRoutes);
 app.use('/api/transacciones', transaccionesRoutes);
+app.use('/api/calc-impuestos', calcImpuestosRoutes);
 
 // 404 handler
 app.use((req, res) => {

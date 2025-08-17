@@ -79,6 +79,12 @@ export default function Navbar() {
             >
               Cotizaciones
             </Link>
+            <Link
+              to="/calculadora-impuestos"
+              className={`px-2 py-2 rounded-md text-xs font-medium transition-colors whitespace-nowrap ${isActive('/calculadora-impuestos')}`}
+            >
+              Calc. Impuestos
+            </Link>
           </div>
         </div>
         {/* Desktop: todo en una sola fila */}
@@ -104,6 +110,12 @@ export default function Navbar() {
               className={`px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${isActive('/cotizaciones')}`}
             >
               Cotizaciones
+            </Link>
+            <Link
+              to="/calculadora-impuestos"
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${isActive('/calculadora-impuestos')}`}
+            >
+              Calc. Impuestos
             </Link>
           </div>
           <div className="flex items-center pr-2 gap-3 relative">

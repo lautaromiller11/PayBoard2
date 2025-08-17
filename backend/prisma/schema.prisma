@@ -16,6 +16,7 @@ model User {
   createdAt    DateTime      @default(now())
   servicios    Servicio[]
   transacciones Transaccion[]
+  calculationLogs CalculationLog[]
   cotizacionesSeleccionadas String? // <-- Nuevo campo (puedes usar JSON.stringify)
 }
 
@@ -58,5 +59,46 @@ model Transaccion {
   user         User     @relation(fields: [userId], references: [id])
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+}
+
+// Modelos para Calculadora de Impuestos
+
+model Rate {
+  id        Int      @id @default(autoincrement())
+  tipo      String   // 'oficial', 'blue', 'tarjeta', 'mep', 'ccl', 'cripto'
+  compra    Decimal?
+  venta     Decimal
+  source    String   // 'dolarapi.com', 'bcra', 'dolarito'
+  fetchedAt DateTime
+  createdAt DateTime @default(now())
+  
+  @@index([tipo, fetchedAt])
+}
+
+model TaxRule {
+  id           Int      @id @default(autoincrement())
+  name         String
+  tipoEnum     String   // 'IVA', 'PAIS', 'PERCEPCION_GAN', 'IIBB'
+  valuePct     Decimal  // Porcentaje (ej: 21.0 para 21%)
+  scope        String   // 'global' | 'provincia'
+  provinceCode String?  // Código de provincia (ej: 'CABA', 'TDF')
+  active       Boolean  @default(true)
+  updatedAt    DateTime @updatedAt
+  createdAt    DateTime @default(now())
+  
+  @@index([tipoEnum, active])
+  @@index([provinceCode, active])
+}
+
+model CalculationLog {
+  id               Int      @id @default(autoincrement())
+  userId           Int?     // Nullable para permitir cálculos anónimos
+  user             User?    @relation(fields: [userId], references: [id])
+  inputJson        String   // JSON del input del usuario
+  outputJson       String   // JSON del resultado del cálculo
+  ratesSnapshotJson String  // JSON de las cotizaciones usadas
+  createdAt        DateTime @default(now())
+  
+  @@index([userId, createdAt])
 }
 

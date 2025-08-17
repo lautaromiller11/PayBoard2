@@ -4,6 +4,7 @@ import Register from './pages/Register'
 import Servicios from './pages/Servicios'
 import FinanzasPersonales from './pages/FinanzasPersonales'
 import Cotizaciones from './pages/Cotizaciones'
+import CalculadoraImpuestos from './pages/CalculadoraImpuestos'
 import Perfil from './pages/Perfil'
 import Home from './pages/Home'
 import { AuthProvider, useAuth } from './context/AuthContext'
@@ -47,6 +48,14 @@ export default function App() {
               element={
                 <PrivateRoute>
                   <Cotizaciones />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/calculadora-impuestos"
+              element={
+                <PrivateRoute>
+                  <CalculadoraImpuestos />
                 </PrivateRoute>
               }
             />
