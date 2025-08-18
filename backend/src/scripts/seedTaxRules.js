@@ -49,7 +49,7 @@ async function seedTaxRules() {
     {
       name: 'IIBB CABA',
       tipoEnum: 'IIBB',
-      valuePct: 3.5,
+      valuePct: 2.0,
       scope: 'provincia',
       provinceCode: 'CABA',
       active: true
@@ -57,9 +57,41 @@ async function seedTaxRules() {
     {
       name: 'IIBB Buenos Aires',
       tipoEnum: 'IIBB',
-      valuePct: 4.0,
+      valuePct: 2.0,
       scope: 'provincia',
       provinceCode: 'Buenos Aires',
+      active: true
+    },
+    {
+      name: 'IIBB Catamarca',
+      tipoEnum: 'IIBB',
+      valuePct: 0.0,
+      scope: 'provincia',
+      provinceCode: 'Catamarca',
+      active: true
+    },
+    {
+      name: 'IIBB Chaco',
+      tipoEnum: 'IIBB',
+      valuePct: 5.5,
+      scope: 'provincia',
+      provinceCode: 'Chaco',
+      active: true
+    },
+    {
+      name: 'IIBB Chubut',
+      tipoEnum: 'IIBB',
+      valuePct: 0.0,
+      scope: 'provincia',
+      provinceCode: 'Chubut',
+      active: true
+    },
+    {
+      name: 'IIBB Corrientes',
+      tipoEnum: 'IIBB',
+      valuePct: 0.0,
+      scope: 'provincia',
+      provinceCode: 'Corrientes',
       active: true
     },
     {
@@ -71,43 +103,139 @@ async function seedTaxRules() {
       active: true
     },
     {
+      name: 'IIBB Entre Ríos',
+      tipoEnum: 'IIBB',
+      valuePct: 0.0,
+      scope: 'provincia',
+      provinceCode: 'Entre Ríos',
+      active: true
+    },
+    {
+      name: 'IIBB Formosa',
+      tipoEnum: 'IIBB',
+      valuePct: 0.0,
+      scope: 'provincia',
+      provinceCode: 'Formosa',
+      active: true
+    },
+    {
+      name: 'IIBB Jujuy',
+      tipoEnum: 'IIBB',
+      valuePct: 0.0,
+      scope: 'provincia',
+      provinceCode: 'Jujuy',
+      active: true
+    },
+    {
+      name: 'IIBB La Pampa',
+      tipoEnum: 'IIBB',
+      valuePct: 1.0,
+      scope: 'provincia',
+      provinceCode: 'La Pampa',
+      active: true
+    },
+    {
+      name: 'IIBB La Rioja',
+      tipoEnum: 'IIBB',
+      valuePct: 0.0,
+      scope: 'provincia',
+      provinceCode: 'La Rioja',
+      active: true
+    },
+    {
       name: 'IIBB Mendoza',
       tipoEnum: 'IIBB',
-      valuePct: 3.5,
+      valuePct: 0.0,
       scope: 'provincia',
       provinceCode: 'Mendoza',
       active: true
     },
     {
-      name: 'IIBB Tierra del Fuego',
+      name: 'IIBB Misiones',
       tipoEnum: 'IIBB',
-      valuePct: 0.0,
+      valuePct: 2.4,
       scope: 'provincia',
-      provinceCode: 'Tierra del Fuego',
+      provinceCode: 'Misiones',
       active: true
     },
     {
-      name: 'IIBB Santa Fe',
+      name: 'IIBB Neuquén',
       tipoEnum: 'IIBB',
       valuePct: 4.0,
       scope: 'provincia',
-      provinceCode: 'Santa Fe',
+      provinceCode: 'Neuquén',
       active: true
     },
     {
-      name: 'IIBB Tucumán',
+      name: 'IIBB Río Negro',
       tipoEnum: 'IIBB',
-      valuePct: 3.0,
+      valuePct: 5.0,
       scope: 'provincia',
-      provinceCode: 'Tucumán',
+      provinceCode: 'Río Negro',
+      active: true
+    },
+    {
+      name: 'IIBB San Juan',
+      tipoEnum: 'IIBB',
+      valuePct: 0.0,
+      scope: 'provincia',
+      provinceCode: 'San Juan',
+      active: true
+    },
+    {
+      name: 'IIBB San Luis',
+      tipoEnum: 'IIBB',
+      valuePct: 0.0,
+      scope: 'provincia',
+      provinceCode: 'San Luis',
       active: true
     },
     {
       name: 'IIBB Salta',
       tipoEnum: 'IIBB',
-      valuePct: 2.5,
+      valuePct: 3.6,
       scope: 'provincia',
       provinceCode: 'Salta',
+      active: true
+    },
+    {
+      name: 'IIBB Santa Cruz',
+      tipoEnum: 'IIBB',
+      valuePct: 0.0,
+      scope: 'provincia',
+      provinceCode: 'Santa Cruz',
+      active: true
+    },
+    {
+      name: 'IIBB Santa Fe',
+      tipoEnum: 'IIBB',
+      valuePct: 4.5,
+      scope: 'provincia',
+      provinceCode: 'Santa Fe',
+      active: true
+    },
+    {
+      name: 'IIBB Santiago del Estero',
+      tipoEnum: 'IIBB',
+      valuePct: 0.0,
+      scope: 'provincia',
+      provinceCode: 'Santiago del Estero',
+      active: true
+    },
+    {
+      name: 'IIBB Tierra del Fuego',
+      tipoEnum: 'IIBB',
+      valuePct: 3.0,
+      scope: 'provincia',
+      provinceCode: 'Tierra del Fuego',
+      active: true
+    },
+    {
+      name: 'IIBB Tucumán',
+      tipoEnum: 'IIBB',
+      valuePct: 0.0,
+      scope: 'provincia',
+      provinceCode: 'Tucumán',
       active: true
     }
   ];

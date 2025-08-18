@@ -9,6 +9,14 @@ const DOLARAPI_BASE = process.env.DOLARAPI_BASE || 'https://dolarapi.com/v1/dola
 let redisClient = null;
 
 async function initRedis() {
+  // Verificar si Redis está habilitado
+  const redisEnabled = process.env.REDIS_ENABLED === 'true';
+  
+  if (!redisEnabled) {
+    console.log('⚠️  Redis disabled for development (REDIS_ENABLED=false)');
+    return null;
+  }
+  
   if (!redisClient) {
     try {
       redisClient = Redis.createClient({
@@ -16,13 +24,14 @@ async function initRedis() {
       });
       
       redisClient.on('error', (err) => {
-        console.error('Redis Error:', err);
+        console.warn('Redis not available (development mode):', err.message);
+        redisClient = null; // Deshabilitar Redis si hay error
       });
       
       await redisClient.connect();
-      console.log('Redis connected successfully');
+      console.log('✅ Redis connected successfully');
     } catch (error) {
-      console.error('Failed to connect to Redis:', error);
+      console.warn('⚠️  Redis not available, running without cache (development mode)');
       // Continuar sin Redis si no está disponible
       redisClient = null;
     }
@@ -33,13 +42,9 @@ async function initRedis() {
 // Mapeo de método de pago a tipo de cotización
 const METODO_TO_COTIZACION = {
   'tarjeta_pesificado': 'tarjeta',
-  'tarjeta_dolares_cuenta': 'oficial',
-  'mep': 'bolsa',
-  'ccl': 'ccl',
-  'blue': 'blue',
-  'crypto': 'cripto',
+  'tarjeta_usd_cuenta': 'oficial',
   'mercado_pago': 'oficial',
-  'efectivo': 'blue'
+  'cryptomonedas': 'cripto'
 };
 
 /**

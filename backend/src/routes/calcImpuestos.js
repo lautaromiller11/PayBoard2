@@ -226,13 +226,9 @@ router.get('/health', async (req, res) => {
 function formatMetodoPagoLabel(metodo) {
   const labels = {
     'tarjeta_pesificado': 'Tarjeta (Pesificado)',
-    'tarjeta_dolares_cuenta': 'Tarjeta (Dólares en cuenta)',
-    'mep': 'MEP (Mercado Electrónico de Pagos)',
-    'ccl': 'CCL (Contado con Liquidación)',
-    'blue': 'Dólar Blue',
-    'crypto': 'Criptomonedas',
+    'tarjeta_usd_cuenta': 'Tarjeta (USD en cuenta)',
     'mercado_pago': 'Mercado Pago',
-    'efectivo': 'Efectivo'
+    'cryptomonedas': 'Cryptomonedas'
   };
   
   return labels[metodo] || metodo;

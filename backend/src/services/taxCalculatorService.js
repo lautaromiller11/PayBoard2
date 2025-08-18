@@ -3,17 +3,16 @@ const { getCotizacionPorMetodo } = require('./ratesService');
 
 // Provincias válidas
 const PROVINCIAS_VALIDAS = [
-  'CABA', 'Buenos Aires', 'Córdoba', 'Mendoza', 'Tierra del Fuego',
-  'Santa Fe', 'Tucumán', 'Salta', 'Entre Ríos', 'Misiones', 'Chaco',
-  'Corrientes', 'Santiago del Estero', 'San Juan', 'Jujuy', 'Río Negro',
-  'Formosa', 'Neuquén', 'Chubut', 'San Luis', 'Catamarca', 'La Rioja',
-  'La Pampa', 'Santa Cruz'
+  'CABA', 'Buenos Aires', 'Catamarca', 'Chaco', 'Chubut', 'Corrientes', 
+  'Córdoba', 'Entre Ríos', 'Formosa', 'Jujuy', 'La Pampa', 'La Rioja', 
+  'Mendoza', 'Misiones', 'Neuquén', 'Río Negro', 'San Juan', 'San Luis', 
+  'Salta', 'Santa Cruz', 'Santa Fe', 'Santiago del Estero', 'Tierra del Fuego', 
+  'Tucumán'
 ];
 
 // Métodos de pago válidos
 const METODOS_PAGO_VALIDOS = [
-  'tarjeta_pesificado', 'tarjeta_dolares_cuenta', 'mep', 'ccl', 
-  'blue', 'crypto', 'mercado_pago', 'efectivo'
+  'tarjeta_pesificado', 'tarjeta_usd_cuenta', 'mercado_pago', 'cryptomonedas'
 ];
 
 /**

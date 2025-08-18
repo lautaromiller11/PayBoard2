@@ -1,31 +1,34 @@
-import React, { useState, useEffect } from 'react';
-import Layout from '../components/Layout';
-import { api } from '../lib/api';
-import { FaCalculator, FaSpinner, FaInfoCircle, FaExclamationTriangle } from 'react-icons/fa';
+import React, { useEffect, useRef, useState } from 'react';
+import { FaCalculator, FaSpinner, FaExclamationTriangle, FaInfoCircle } from 'react-icons/fa';
+import Layout from '../components/Layout'; // ajusta la ruta si hace falta
 
-interface CalculadoraInput {
+// -------------------- TIPOS --------------------
+interface PaymentMethod {
+  value: string;
+  label: string;
+}
+
+interface CalculationInput {
   precio: string;
   moneda: 'USD' | 'ARS';
   provincia: string;
   metodo_pago: string;
-  categoria_producto: string;
 }
 
-interface CalculadoraResult {
+interface CalculationResult {
   input: {
     precio: number;
     moneda: string;
     provincia: string;
     metodo_pago: string;
-    categoria_producto: string;
   };
-  cotizacion: {
+  cotizacion?: {
     tipo: string;
     valor: number;
     source: string;
     fetched_at: string;
     is_stale: boolean;
-  } | null;
+  };
   desglose: {
     precio_base_ars: number;
     iva: number;
@@ -35,349 +38,574 @@ interface CalculadoraResult {
     total: number;
   };
   meta: {
-    rules_used: string[];
     warnings: string[];
+    rules_used: string[];
   };
 }
 
-interface MetodoPago {
-  value: string;
-  label: string;
+// -------------------- COMPONENTES AUXILIARES --------------------
+
+// Switch de moneda (USD / ARS)
+interface CurrencySwitchProps {
+  currency: 'USD' | 'ARS';
+  onCurrencyChange: (currency: 'USD' | 'ARS') => void;
+  disabled?: boolean;
 }
+const CurrencySwitch: React.FC<CurrencySwitchProps> = ({ currency, onCurrencyChange, disabled = false }) => (
+  <div className="inline-flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1 transition-colors duration-200">
+    <button
+      type="button"
+      onClick={() => onCurrencyChange('USD')}
+      disabled={disabled}
+      className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-150 ${
+        currency === 'USD'
+          ? 'bg-violet-600 hover:bg-violet-700 text-white shadow-sm'
+          : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
+      } disabled:opacity-50 disabled:cursor-not-allowed`}
+    >
+      USD
+    </button>
+    <button
+      type="button"
+      onClick={() => onCurrencyChange('ARS')}
+      disabled={disabled}
+      className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-150 ${
+        currency === 'ARS'
+          ? 'bg-violet-600 hover:bg-violet-700 text-white shadow-sm'
+          : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
+      } disabled:opacity-50 disabled:cursor-not-allowed`}
+    >
+      ARS
+    </button>
+  </div>
+);
 
-const CATEGORIAS_PRODUCTO = [
-  { value: 'streaming', label: 'Streaming' },
-  { value: 'videojuego', label: 'Videojuego' },
-  { value: 'software', label: 'Software' },
-  { value: 'otro', label: 'Otro' }
-];
+// Select personalizado de métodos de pago
+interface MetodoPagoSelectProps {
+  value: string;
+  onChange: (value: string) => void;
+  metodos: PaymentMethod[];
+  required?: boolean;
+}
+const MetodoPagoSelect: React.FC<MetodoPagoSelectProps> = ({ value, onChange, metodos, required = false }) => {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement | null>(null);
 
-export default function CalculadoraImpuestos() {
-  const [input, setInput] = useState<CalculadoraInput>({
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (ref.current && !ref.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const selectedLabel = metodos.find(m => m.value === value)?.label || 'Seleccionar método...';
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        className={`w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg px-3 py-2 flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200`}
+        onClick={() => setOpen(v => !v)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-required={required}
+      >
+        <span className={value ? '' : 'text-gray-400'}>{selectedLabel}</span>
+        <svg className={`w-5 h-5 ml-2 transition-transform ${open ? 'rotate-180' : ''} text-gray-400`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {open && (
+        <ul
+          className="absolute z-20 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-48 overflow-y-auto"
+          role="listbox"
+        >
+          <li
+            className={`px-3 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 ${!value ? 'text-violet-600 font-semibold' : 'text-gray-400'}`}
+            onClick={() => { onChange(''); setOpen(false); }}
+            role="option"
+            aria-selected={!value}
+          >
+            Seleccionar método...
+          </li>
+
+          {metodos.map(metodo => (
+            <li
+              key={metodo.value}
+              className={`px-3 py-2 cursor-pointer hover:bg-violet-100 dark:hover:bg-violet-900/40 ${value === metodo.value ? 'bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300 font-semibold' : ''}`}
+              onClick={() => { onChange(metodo.value); setOpen(false); }}
+              role="option"
+              aria-selected={value === metodo.value}
+            >
+              {metodo.label}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+};
+
+// Select personalizado de provincias (con scroll)
+interface ProvinceSelectProps {
+  value: string;
+  onChange: (value: string) => void;
+  required?: boolean;
+}
+const ProvinceSelect: React.FC<ProvinceSelectProps> = ({ value, onChange, required = false }) => {
+  const provincias = [
+    'Ciudad Autónoma de Buenos Aires',
+    'Buenos Aires',
+    'Catamarca',
+    'Chaco',
+    'Chubut',
+    'Córdoba',
+    'Corrientes',
+    'Entre Ríos',
+    'Formosa',
+    'Jujuy',
+    'La Pampa',
+    'La Rioja',
+    'Mendoza',
+    'Misiones',
+    'Neuquén',
+    'Río Negro',
+    'Salta',
+    'San Juan',
+    'San Luis',
+    'Santa Cruz',
+    'Santa Fe',
+    'Santiago del Estero',
+    'Tierra del Fuego',
+    'Tucumán'
+  ];
+
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (ref.current && !ref.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const selectedLabel = value || 'Seleccionar provincia...';
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        className={`w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg px-3 py-2 flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200`}
+        onClick={() => setOpen(v => !v)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-required={required}
+      >
+        <span className={value ? '' : 'text-gray-400'}>{selectedLabel}</span>
+        <svg className={`w-5 h-5 ml-2 transition-transform ${open ? 'rotate-180' : ''} text-gray-400`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {open && (
+        <ul
+          className="absolute z-20 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-48 overflow-y-auto"
+          role="listbox"
+        >
+          <li
+            className={`px-3 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 ${!value ? 'text-violet-600 font-semibold' : 'text-gray-400'}`}
+            onClick={() => { onChange(''); setOpen(false); }}
+            role="option"
+            aria-selected={!value}
+          >
+            Seleccionar provincia...
+          </li>
+
+          {provincias.map(prov => (
+            <li
+              key={prov}
+              className={`px-3 py-2 cursor-pointer hover:bg-violet-100 dark:hover:bg-violet-900/40 ${value === prov ? 'bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300 font-semibold' : ''}`}
+              onClick={() => { onChange(prov); setOpen(false); }}
+              role="option"
+              aria-selected={value === prov}
+            >
+              {prov}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+};
+
+// -------------------- COMPONENTE PRINCIPAL --------------------
+
+export default function CalculadoraImpuestos(): JSX.Element {
+  const [input, setInput] = useState<CalculationInput>({
     precio: '',
     moneda: 'USD',
     provincia: '',
-    metodo_pago: '',
-    categoria_producto: 'otro'
+    metodo_pago: ''
   });
 
-  const [provincias, setProvincias] = useState<string[]>([]);
-  const [metodosPago, setMetodosPago] = useState<MetodoPago[]>([]);
-  const [result, setResult] = useState<CalculadoraResult | null>(null);
+  const [result, setResult] = useState<CalculationResult | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string>('');
   const [showDetails, setShowDetails] = useState(false);
+  const [metodosPago, setMetodosPago] = useState<PaymentMethod[]>([]);
 
-  // Cargar provincias y métodos de pago al inicializar
+  // Cargar métodos de pago
   useEffect(() => {
-    loadProvincias();
-    loadMetodosPago();
+    const fetchMetodosPago = async () => {
+      try {
+        const response = await fetch('/api/calc-impuestos/metodos-pago');
+        if (response.ok) {
+          const data = await response.json();
+          setMetodosPago(data.metodos ?? []);
+        } else {
+          // fallback
+          setMetodosPago([
+            { value: 'tarjeta_pesificado', label: 'Tarjeta (Pesificado)' },
+            { value: 'tarjeta_dolares_cuenta', label: 'Tarjeta (USD en cuenta)' },
+            { value: 'mercado_pago', label: 'Mercado Pago' },
+            { value: 'crypto', label: 'Cryptomonedas' },
+          ]);
+        }
+      } catch {
+        setMetodosPago([
+          { value: 'tarjeta_pesificado', label: 'Tarjeta (Pesificado)' },
+          { value: 'tarjeta_dolares_cuenta', label: 'Tarjeta (USD en cuenta)' },
+          { value: 'mercado_pago', label: 'Mercado Pago' },
+          { value: 'crypto', label: 'Cryptomonedas' },
+        ]);
+      }
+    };
+
+    fetchMetodosPago();
   }, []);
 
-  const loadProvincias = async () => {
-    try {
-      const response = await api.get('/calc-impuestos/provincias');
-      setProvincias(response.data.provincias);
-    } catch (error) {
-      console.error('Error loading provincias:', error);
-    }
+  // Utilidades de formato
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('es-AR', {
+      style: 'currency',
+      currency: 'ARS',
+      minimumFractionDigits: 2,
+    }).format(amount);
   };
 
-  const loadMetodosPago = async () => {
-    try {
-      const response = await api.get('/calc-impuestos/metodos-pago');
-      setMetodosPago(response.data.metodos);
-    } catch (error) {
-      console.error('Error loading métodos de pago:', error);
-    }
+  const formatTimestamp = (timestamp: string) => {
+    return new Date(timestamp).toLocaleString('es-AR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!input.precio || !input.provincia || !input.metodo_pago) {
-      setError('Por favor complete todos los campos obligatorios');
-      return;
-    }
+  // Llamada para calcular impuestos
+  const calculateTaxes = async () => {
+    if (!input.precio || !input.provincia || !input.metodo_pago) return;
 
     setLoading(true);
-    setError(null);
-    setResult(null);
+    setError('');
 
     try {
       const params = new URLSearchParams({
         precio: input.precio,
         moneda: input.moneda,
         provincia: input.provincia,
-        metodo_pago: input.metodo_pago,
-        categoria_producto: input.categoria_producto
+        metodo_pago: input.metodo_pago
       });
 
-      const response = await api.get(`/calc-impuestos?${params}`);
-      setResult(response.data);
-    } catch (error: any) {
-      setError(error.response?.data?.message || 'Error al calcular impuestos');
+      const response = await fetch(`/api/calc-impuestos?${params.toString()}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Error al calcular impuestos');
+      }
+
+      const data = await response.json();
+      setResult(data as CalculationResult);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error desconocido');
+      setResult(null);
     } finally {
       setLoading(false);
     }
   };
 
-  const formatCurrency = (amount: number, currency = 'ARS') => {
-    return new Intl.NumberFormat('es-AR', {
-      style: 'currency',
-      currency: currency,
-      minimumFractionDigits: 2
-    }).format(amount);
+  // Submit del formulario
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    calculateTaxes();
   };
 
-  const formatTimestamp = (timestamp: string) => {
-    return new Date(timestamp).toLocaleString('es-AR');
+  // Cambio de moneda (recalcula si hay datos)
+  const handleCurrencyChange = (newCurrency: 'USD' | 'ARS') => {
+    setInput(prev => ({ ...prev, moneda: newCurrency }));
+    // recalculo suave si hay datos completos
+    if (input.precio && input.provincia && input.metodo_pago) {
+      // pequeña demora para asegurarse que state se propague
+      setTimeout(() => calculateTaxes(), 100);
+    }
   };
+
+  // Recalculo automático al cambiar inputs (debounce)
+  useEffect(() => {
+    if (input.precio && input.provincia && input.metodo_pago) {
+      const id = setTimeout(() => calculateTaxes(), 300);
+      return () => clearTimeout(id);
+    }
+  }, [input.precio, input.provincia, input.metodo_pago, input.moneda]);
 
   return (
     <Layout>
-      <div className="max-w-4xl mx-auto p-6">
-        <div className="bg-white dark:bg-dark-bg-secondary rounded-lg shadow-lg p-8">
-          <div className="flex items-center gap-3 mb-6">
-            <FaCalculator className="text-2xl text-blue-600" />
-            <h1 className="text-3xl font-bold text-gray-800 dark:text-white">
-              Calculadora de Impuestos
-            </h1>
-          </div>
+      <div className="max-w-6xl mx-auto px-2 sm:px-4 py-6">
+        {/* Header */}
+        <div className="flex flex-col gap-1 mb-6">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Calculadora de Impuestos</h1>
+          <p className="text-gray-600 dark:text-gray-300">
+            Calcula el precio final incluyendo impuestos para compras en USD o ARS según tu provincia y método de pago.
+          </p>
+        </div>
 
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* Formulario */}
-            <div className="space-y-6">
+        {/* Contenido */}
+        <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 items-start">
+          {/* Izquierda: Formulario */}
+          <div className="w-full lg:w-96 lg:flex-shrink-0">
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700 transition-all duration-200 hover:shadow-xl">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                  <FaCalculator className="text-blue-600 dark:text-blue-400 text-lg" />
+                </div>
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Datos del cálculo</h2>
+              </div>
+
               <form onSubmit={handleSubmit} className="space-y-4">
-                {/* Precio */}
+                {/* Precio + Moneda */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Precio *
-                  </label>
-                  <div className="relative">
+                  <label htmlFor="precio" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Precio</label>
+                  <div className="flex gap-3 items-center">
                     <input
+                      id="precio"
                       type="number"
                       step="0.01"
                       min="0"
                       value={input.precio}
-                      onChange={(e) => setInput({...input, precio: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-dark-600 rounded-md 
-                               bg-white dark:bg-dark-bg-primary text-gray-900 dark:text-white
-                               focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Ej: 9.99"
+                      onChange={e => setInput(prev => ({ ...prev, precio: e.target.value }))}
+                      placeholder="120.00"
                       required
+                      className="flex-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200"
+                      aria-describedby="precio-help"
                     />
+                    <CurrencySwitch currency={input.moneda} onCurrencyChange={handleCurrencyChange} />
                   </div>
-                </div>
-
-                {/* Moneda */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Moneda
-                  </label>
-                  <div className="flex gap-4">
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        value="USD"
-                        checked={input.moneda === 'USD'}
-                        onChange={(e) => setInput({...input, moneda: e.target.value as 'USD' | 'ARS'})}
-                        className="mr-2"
-                      />
-                      USD
-                    </label>
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        value="ARS"
-                        checked={input.moneda === 'ARS'}
-                        onChange={(e) => setInput({...input, moneda: e.target.value as 'USD' | 'ARS'})}
-                        className="mr-2"
-                      />
-                      ARS
-                    </label>
-                  </div>
-                </div>
-
-                {/* Provincia */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Provincia *
-                  </label>
-                  <select
-                    value={input.provincia}
-                    onChange={(e) => setInput({...input, provincia: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-dark-600 rounded-md 
-                             bg-white dark:bg-dark-bg-primary text-gray-900 dark:text-white
-                             focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    required
-                  >
-                    <option value="">Seleccionar provincia...</option>
-                    {provincias.map(provincia => (
-                      <option key={provincia} value={provincia}>{provincia}</option>
-                    ))}
-                  </select>
                 </div>
 
                 {/* Método de pago */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Método de pago *
-                  </label>
-                  <select
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Método de pago</label>
+                  <MetodoPagoSelect
                     value={input.metodo_pago}
-                    onChange={(e) => setInput({...input, metodo_pago: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-dark-600 rounded-md 
-                             bg-white dark:bg-dark-bg-primary text-gray-900 dark:text-white
-                             focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    onChange={(value) => setInput(prev => ({ ...prev, metodo_pago: value }))}
+                    metodos={metodosPago}
                     required
-                  >
-                    <option value="">Seleccionar método...</option>
-                    {metodosPago.map(metodo => (
-                      <option key={metodo.value} value={metodo.value}>{metodo.label}</option>
-                    ))}
-                  </select>
+                  />
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">El método de pago afecta los impuestos aplicables</p>
                 </div>
 
-                {/* Categoría */}
+                {/* Provincia */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Categoría del producto
-                  </label>
-                  <select
-                    value={input.categoria_producto}
-                    onChange={(e) => setInput({...input, categoria_producto: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-dark-600 rounded-md 
-                             bg-white dark:bg-dark-bg-primary text-gray-900 dark:text-white
-                             focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    {CATEGORIAS_PRODUCTO.map(categoria => (
-                      <option key={categoria.value} value={categoria.value}>{categoria.label}</option>
-                    ))}
-                  </select>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Provincia</label>
+                  <ProvinceSelect
+                    value={input.provincia}
+                    onChange={(value) => setInput(prev => ({ ...prev, provincia: value }))}
+                    required
+                  />
                 </div>
 
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 
-                           text-white font-medium py-2 px-4 rounded-md transition-colors
-                           flex items-center justify-center gap-2"
-                >
-                  {loading ? (
-                    <>
-                      <FaSpinner className="animate-spin" />
-                      Calculando...
-                    </>
-                  ) : (
-                    <>
-                      <FaCalculator />
-                      Calcular impuestos
-                    </>
-                  )}
-                </button>
+                {/* Botón calcular */}
+                <div>
+                  <button
+                    type="submit"
+                    disabled={loading || !input.precio || !input.provincia || !input.metodo_pago}
+                    className="w-full bg-violet-600 hover:bg-violet-700 disabled:bg-violet-400 disabled:cursor-not-allowed text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
+                  >
+                    {loading ? (
+                      <>
+                        <FaSpinner className="animate-spin" />
+                        Calculando...
+                      </>
+                    ) : (
+                      <>
+                        <FaCalculator />
+                        Calcular Impuestos
+                      </>
+                    )}
+                  </button>
+                </div>
               </form>
+            </div>
+          </div>
 
-              {/* Disclaimer */}
-              <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-md p-4">
-                <div className="flex items-start gap-2">
-                  <FaExclamationTriangle className="text-yellow-600 mt-1 flex-shrink-0" />
-                  <div className="text-sm text-yellow-800 dark:text-yellow-200">
-                    <strong>Disclaimer:</strong> Cálculo informativo. Para asesoramiento tributario 
-                    consulte a un profesional o la normativa AFIP vigente.
-                  </div>
+          {/* Derecha: Resultados */}
+          <div className="w-full lg:w-[28rem] lg:flex-shrink-0">
+            {/* Error */}
+            {error && (
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-xl p-4 mb-6 shadow-sm">
+                <div className="text-red-800 dark:text-red-200 text-sm flex items-center gap-2">
+                  <FaExclamationTriangle className="text-red-600 dark:text-red-400" />
+                  {error}
                 </div>
               </div>
-            </div>
+            )}
 
-            {/* Resultados */}
-            <div className="space-y-6">
-              {error && (
-                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-md p-4">
-                  <div className="text-red-800 dark:text-red-200">{error}</div>
+            {/* Resultado */}
+            {result && (
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 transition-all duration-200 hover:shadow-xl">
+                <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 px-6 py-4 border-b border-gray-200 dark:border-gray-600 rounded-t-xl">
+                  <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+                    <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                      <FaInfoCircle className="text-green-600 dark:text-green-400" />
+                    </div>
+                    Resultado del cálculo
+                  </h2>
                 </div>
-              )}
 
-              {result && (
-                <div className="space-y-4">
-                  {/* Cotización usada */}
+                <div className="p-6 space-y-6">
+                  {/* Cotización */}
                   {result.cotizacion && (
-                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-md p-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="font-medium text-blue-800 dark:text-blue-200">
-                            Cotización {result.cotizacion.tipo}
+                    <div>
+                      <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200 mb-3">Cotización utilizada</h3>
+                      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-4">
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <div className="font-medium text-blue-800 dark:text-blue-200 text-sm">
+                              Tipo: {result.cotizacion.tipo.charAt(0).toUpperCase() + result.cotizacion.tipo.slice(1)}
+                            </div>
+                            <div className="text-sm text-blue-700 dark:text-blue-300">
+                              Valor: {formatCurrency(result.cotizacion.valor)}
+                            </div>
+                            <div className="text-xs text-blue-600 dark:text-blue-400">
+                              Fuente: {result.cotizacion.source}
+                            </div>
                           </div>
-                          <div className="text-sm text-blue-600 dark:text-blue-300">
-                            {formatCurrency(result.cotizacion.valor)} - {result.cotizacion.source}
+
+                          <div className="text-right">
+                            {result.cotizacion.is_stale && (
+                              <span className="bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 text-xs px-2 py-1 rounded">No disponible</span>
+                            )}
+                            <div className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                              Actualización: {formatTimestamp(result.cotizacion.fetched_at)}
+                            </div>
                           </div>
                         </div>
-                        {result.cotizacion.is_stale && (
-                          <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded">
-                            Cacheada
-                          </span>
-                        )}
-                      </div>
-                      <div className="text-xs text-blue-500 dark:text-blue-400 mt-1">
-                        {formatTimestamp(result.cotizacion.fetched_at)}
                       </div>
                     </div>
                   )}
 
-                  {/* Desglose */}
-                  <div className="bg-gray-50 dark:bg-dark-bg-accent rounded-md p-4">
-                    <h3 className="font-semibold text-gray-800 dark:text-white mb-3">
-                      Desglose de impuestos
-                    </h3>
-                    <div className="space-y-2">
+                  {/* Datos de entrada */}
+                  <div>
+                    <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200 mb-3">Datos de entrada</h3>
+                    <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
-                        <span className="text-gray-600 dark:text-gray-300">Precio base:</span>
-                        <span className="font-medium">{formatCurrency(result.desglose.precio_base_ars)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600 dark:text-gray-300">IVA:</span>
-                        <span className="font-medium">{formatCurrency(result.desglose.iva)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600 dark:text-gray-300">Imp. PAIS:</span>
-                        <span className="font-medium">{formatCurrency(result.desglose.pais)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600 dark:text-gray-300">Perc. Ganancias:</span>
-                        <span className="font-medium">{formatCurrency(result.desglose.percepcion_ganancias)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600 dark:text-gray-300">IIBB:</span>
-                        <span className="font-medium">{formatCurrency(result.desglose.iibb)}</span>
-                      </div>
-                      <hr className="my-2 border-gray-300 dark:border-gray-600" />
-                      <div className="flex justify-between text-lg font-bold">
-                        <span className="text-gray-800 dark:text-white">Total:</span>
-                        <span className="text-green-600 dark:text-green-400">
-                          {formatCurrency(result.desglose.total)}
+                        <span className="text-gray-600 dark:text-gray-400">Precio:</span>
+                        <span className="text-gray-900 dark:text-white font-medium">
+                          {result.input.moneda} {result.input.precio.toFixed(2)}
                         </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Provincia:</span>
+                        <span className="text-gray-900 dark:text-white font-medium">{result.input.provincia}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Método de pago:</span>
+                        <span className="text-gray-900 dark:text-white font-medium">
+                          {metodosPago.find(m => m.value === result.input.metodo_pago)?.label || result.input.metodo_pago}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Desglose */}
+                  <div>
+                    <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200 mb-3">Desglose de impuestos</h3>
+                    <div className="space-y-3">
+                      <div className="flex justify-between text-base">
+                        <span className="text-gray-700 dark:text-gray-300">Precio base</span>
+                        <span className="text-gray-900 dark:text-white font-medium">{formatCurrency(result.desglose.precio_base_ars)}</span>
+                      </div>
+
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600 dark:text-gray-400">IVA</span>
+                        <span className="text-gray-900 dark:text-white">{formatCurrency(result.desglose.iva)}</span>
+                      </div>
+
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600 dark:text-gray-400">Impuesto PAIS</span>
+                        <span className="text-gray-900 dark:text-white">{formatCurrency(result.desglose.pais)}</span>
+                      </div>
+
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600 dark:text-gray-400">Percepción Ganancias</span>
+                        <span className="text-gray-900 dark:text-white">{formatCurrency(result.desglose.percepcion_ganancias)}</span>
+                      </div>
+
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600 dark:text-gray-400">
+                          IIBB {result.input.provincia}{' '}
+                          {(() => {
+                            const iibbRule = result.meta.rules_used.find(rule => rule.includes('IIBB'));
+                            if (iibbRule) {
+                              const match = iibbRule.match(/(\d+(?:\.\d+)?)%/);
+                              return match ? `(${match[1]}%)` : '';
+                            }
+                            return '';
+                          })()}
+                        </span>
+                        <span className="text-gray-900 dark:text-white">{formatCurrency(result.desglose.iibb)}</span>
+                      </div>
+
+                      <hr className="border-gray-200 dark:border-gray-600" />
+
+                      <div className="flex justify-between text-lg font-bold">
+                        <span className="text-gray-900 dark:text-white">Total</span>
+                        <span className="text-green-600 dark:text-green-400">{formatCurrency(result.desglose.total)}</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Warnings */}
                   {result.meta.warnings.length > 0 && (
-                    <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-md p-4">
-                      <h4 className="font-medium text-yellow-800 dark:text-yellow-200 mb-2">
+                    <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg p-4">
+                      <h4 className="font-medium text-yellow-800 dark:text-yellow-200 mb-2 flex items-center gap-2 text-sm">
+                        <FaExclamationTriangle className="text-yellow-600 dark:text-yellow-400" />
                         Observaciones:
                       </h4>
                       <ul className="text-sm text-yellow-700 dark:text-yellow-300 space-y-1">
-                        {result.meta.warnings.map((warning, index) => (
-                          <li key={index}>• {warning}</li>
-                        ))}
+                        {result.meta.warnings.map((w, i) => <li key={i}>• {w}</li>)}
                       </ul>
                     </div>
                   )}
 
-                  {/* Botón para ver detalles */}
+                  {/* Ver detalles */}
                   <button
-                    onClick={() => setShowDetails(!showDetails)}
-                    className="flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm"
+                    onClick={() => setShowDetails(s => !s)}
+                    className="flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-sm transition-colors duration-150"
+                    type="button"
                   >
                     <FaInfoCircle />
                     {showDetails ? 'Ocultar' : 'Ver'} supuestos y fuentes
@@ -385,20 +613,16 @@ export default function CalculadoraImpuestos() {
 
                   {/* Detalles expandidos */}
                   {showDetails && (
-                    <div className="bg-gray-50 dark:bg-dark-bg-accent rounded-md p-4 text-sm">
-                      <h4 className="font-medium text-gray-800 dark:text-white mb-2">
-                        Reglas aplicadas:
-                      </h4>
-                      <ul className="text-gray-600 dark:text-gray-300 space-y-1">
-                        {result.meta.rules_used.map((rule, index) => (
-                          <li key={index}>• {rule}</li>
-                        ))}
+                    <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 transition-colors duration-200">
+                      <h4 className="font-medium text-gray-800 dark:text-gray-200 mb-2 text-sm">Reglas aplicadas:</h4>
+                      <ul className="text-xs text-gray-600 dark:text-gray-300 space-y-1">
+                        {result.meta.rules_used.map((rule, idx) => <li key={idx}>• {rule}</li>)}
                       </ul>
                     </div>
                   )}
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
