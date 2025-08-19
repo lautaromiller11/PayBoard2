@@ -397,7 +397,7 @@ export default function CalculadoraImpuestos(): JSX.Element {
                 {/* Precio + Moneda */}
                 <div>
                   <label htmlFor="precio" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Precio</label>
-                  <div className="flex flex-col xs:flex-row gap-2 items-stretch xs:items-center w-full">
+                  <div className="flex flex-row gap-2 items-center w-full">
                     <input
                       id="precio"
                       type="number"
@@ -407,10 +407,10 @@ export default function CalculadoraImpuestos(): JSX.Element {
                       onChange={e => setInput(prev => ({ ...prev, precio: e.target.value }))}
                       placeholder="120.00"
                       required
-                      className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200 text-base"
+                      className="w-2/3 max-w-[260px] border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200 text-base"
                       aria-describedby="precio-help"
                     />
-                    <div className="w-full xs:w-auto flex-shrink-0">
+                    <div className="w-1/3 flex-shrink-0 flex justify-end">
                       <CurrencySwitch currency={input.moneda} onCurrencyChange={handleCurrencyChange} />
                     </div>
                   </div>
