@@ -60,31 +60,33 @@ export default function Navbar() {
               </div>
             </div>
           </div>
-          <div className="flex justify-center items-center gap-2 py-2 w-full bg-white dark:bg-dark-bg-primary">
-            <Link
-              to="/servicios"
-              className={`px-2 py-2 rounded-md text-xs font-medium transition-colors whitespace-nowrap ${isActive('/servicios')}`}
-            >
-              Mis servicios
-            </Link>
-            <Link
-              to="/finanzas"
-              className={`px-2 py-2 rounded-md text-xs font-medium transition-colors whitespace-nowrap ${isActive('/finanzas')}`}
-            >
-              Finanzas personales
-            </Link>
-            <Link
-              to="/cotizaciones"
-              className={`px-2 py-2 rounded-md text-xs font-medium transition-colors whitespace-nowrap ${isActive('/cotizaciones')}`}
-            >
-              Cotizaciones
-            </Link>
-            <Link
-              to="/calculadora-impuestos"
-              className={`px-2 py-2 rounded-md text-xs font-medium transition-colors whitespace-nowrap ${isActive('/calculadora-impuestos')}`}
-            >
-              Calc. Impuestos
-            </Link>
+          <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700 w-full bg-white dark:bg-dark-bg-primary">
+            <div className="flex justify-start items-center gap-2 py-2 w-max min-w-full px-2">
+              <Link
+                to="/servicios"
+                className={`px-2 py-2 rounded-md text-xs font-medium transition-colors whitespace-nowrap ${isActive('/servicios')}`}
+              >
+                Mis servicios
+              </Link>
+              <Link
+                to="/finanzas"
+                className={`px-2 py-2 rounded-md text-xs font-medium transition-colors whitespace-nowrap ${isActive('/finanzas')}`}
+              >
+                Finanzas personales
+              </Link>
+              <Link
+                to="/cotizaciones"
+                className={`px-2 py-2 rounded-md text-xs font-medium transition-colors whitespace-nowrap ${isActive('/cotizaciones')}`}
+              >
+                Cotizaciones
+              </Link>
+              <Link
+                to="/calculadora-impuestos"
+                className={`px-2 py-2 rounded-md text-xs font-medium transition-colors whitespace-nowrap ${isActive('/calculadora-impuestos')}`}
+              >
+                Calculadora de Impuestos
+              </Link>
+            </div>
           </div>
         </div>
         {/* Desktop: todo en una sola fila */}
@@ -115,7 +117,7 @@ export default function Navbar() {
               to="/calculadora-impuestos"
               className={`px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${isActive('/calculadora-impuestos')}`}
             >
-              Calc. Impuestos
+              Calculadora de Impuestos
             </Link>
           </div>
           <div className="flex items-center pr-2 gap-3 relative">

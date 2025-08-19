@@ -158,7 +158,7 @@ interface ProvinceSelectProps {
 }
 const ProvinceSelect: React.FC<ProvinceSelectProps> = ({ value, onChange, required = false }) => {
   const provincias = [
-    'Ciudad Autónoma de Buenos Aires',
+    'CABA',
     'Buenos Aires',
     'Catamarca',
     'Chaco',
@@ -375,30 +375,29 @@ export default function CalculadoraImpuestos(): JSX.Element {
     <Layout>
       <div className="max-w-6xl mx-auto px-2 sm:px-4 py-6">
         {/* Header */}
-        <div className="flex flex-col gap-1 mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Calculadora de Impuestos</h1>
-          <p className="text-gray-600 dark:text-gray-300">
+        <div className="flex flex-col gap-1 mb-6 px-1 sm:px-0">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white leading-tight">Calculadora de Impuestos</h1>
+          <p className="text-gray-600 dark:text-gray-300 text-base sm:text-base text-[15px] leading-snug">
             Calcula el precio final incluyendo impuestos para compras en USD o ARS según tu provincia y método de pago.
           </p>
         </div>
 
         {/* Contenido */}
-        <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 items-start">
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-12 items-start">
           {/* Izquierda: Formulario */}
-          <div className="w-full lg:w-96 lg:flex-shrink-0">
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700 transition-all duration-200 hover:shadow-xl">
+          <div className="w-full max-w-md mx-auto lg:w-96 lg:flex-shrink-0">
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-4 sm:p-6 shadow-lg border border-gray-200 dark:border-gray-700 transition-all duration-200 hover:shadow-xl">
               <div className="flex items-center gap-3 mb-6">
                 <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
                   <FaCalculator className="text-blue-600 dark:text-blue-400 text-lg" />
                 </div>
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Datos del cálculo</h2>
               </div>
-
               <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Precio + Moneda */}
                 <div>
                   <label htmlFor="precio" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Precio</label>
-                  <div className="flex gap-3 items-center">
+                  <div className="flex flex-col xs:flex-row gap-2 items-stretch xs:items-center w-full">
                     <input
                       id="precio"
                       type="number"
@@ -408,10 +407,12 @@ export default function CalculadoraImpuestos(): JSX.Element {
                       onChange={e => setInput(prev => ({ ...prev, precio: e.target.value }))}
                       placeholder="120.00"
                       required
-                      className="flex-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200"
+                      className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200 text-base"
                       aria-describedby="precio-help"
                     />
-                    <CurrencySwitch currency={input.moneda} onCurrencyChange={handleCurrencyChange} />
+                    <div className="w-full xs:w-auto flex-shrink-0">
+                      <CurrencySwitch currency={input.moneda} onCurrencyChange={handleCurrencyChange} />
+                    </div>
                   </div>
                 </div>
 
@@ -442,7 +443,7 @@ export default function CalculadoraImpuestos(): JSX.Element {
                   <button
                     type="submit"
                     disabled={loading || !input.precio || !input.provincia || !input.metodo_pago}
-                    className="w-full bg-violet-600 hover:bg-violet-700 disabled:bg-violet-400 disabled:cursor-not-allowed text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
+                    className="w-full max-w-full bg-violet-600 hover:bg-violet-700 disabled:bg-violet-400 disabled:cursor-not-allowed text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
                   >
                     {loading ? (
                       <>
@@ -468,7 +469,7 @@ export default function CalculadoraImpuestos(): JSX.Element {
           </div>
 
           {/* Derecha: Resultados */}
-          <div className="w-full lg:w-[28rem] lg:flex-shrink-0">
+          <div className="w-full max-w-md mx-auto mt-8 lg:mt-0 lg:w-[28rem] lg:flex-shrink-0">
             {/* Error */}
             {error && (
               <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-xl p-4 mb-6 shadow-sm">
