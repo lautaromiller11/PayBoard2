@@ -32,8 +32,8 @@ interface CalculationResult {
   desglose: {
     precio_base_ars: number;
     iva: number;
-    pais: number;
     percepcion_ganancias: number;
+  percepcion_ganancias: number;
     iibb: number;
     total: number;
   };
@@ -456,6 +456,12 @@ export default function CalculadoraImpuestos(): JSX.Element {
                       </>
                     )}
                   </button>
+                  <div className="mt-6 border-t border-gray-200 dark:border-gray-700 pt-4 flex items-start gap-2 text-gray-600 dark:text-gray-400 text-sm">
+                    <FaInfoCircle className="mt-0.5 text-lg text-gray-400 dark:text-gray-500" />
+                    <span>
+                      Esta herramienta calcula el precio final incluyendo todos los impuestos aplicables según tu ubicación y método de pago: IVA, percepciones a cuenta de Ganancias y IIBB.
+                    </span>
+                  </div>
                 </div>
               </form>
             </div>
@@ -470,6 +476,25 @@ export default function CalculadoraImpuestos(): JSX.Element {
                   <FaExclamationTriangle className="text-red-600 dark:text-red-400" />
                   {error}
                 </div>
+              </div>
+            )}
+
+            {/* Vista de carga */}
+            {loading && !error && !result && (
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 flex flex-col items-center justify-center py-20">
+                <FaSpinner className="animate-spin text-4xl text-violet-600 mb-4" />
+                <span className="text-violet-700 dark:text-violet-300 font-medium text-lg">Calculando...</span>
+              </div>
+            )}
+
+            {/* Vista de bienvenida/placeholder */}
+            {!loading && !error && !result && (
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 flex flex-col items-center justify-center py-32">
+                <div className="bg-blue-100 dark:bg-blue-900/30 rounded-full p-6 mb-4">
+                  <FaCalculator className="text-blue-600 dark:text-blue-400 text-4xl" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">¿Listo para calcular?</h3>
+                <p className="text-gray-600 dark:text-gray-300 text-center max-w-xs">Completa el formulario de la izquierda para ver el desglose completo de impuestos en tiempo real.</p>
               </div>
             )}
 
@@ -555,12 +580,7 @@ export default function CalculadoraImpuestos(): JSX.Element {
                       </div>
 
                       <div className="flex justify-between text-sm">
-                        <span className="text-gray-600 dark:text-gray-400">Impuesto PAIS</span>
-                        <span className="text-gray-900 dark:text-white">{formatCurrency(result.desglose.pais)}</span>
-                      </div>
-
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-600 dark:text-gray-400">Percepción Ganancias</span>
+                        <span className="text-gray-600 dark:text-gray-400">Percepción Ganancias (30%)</span>
                         <span className="text-gray-900 dark:text-white">{formatCurrency(result.desglose.percepcion_ganancias)}</span>
                       </div>
 
@@ -588,18 +608,10 @@ export default function CalculadoraImpuestos(): JSX.Element {
                     </div>
                   </div>
 
-                  {/* Warnings */}
-                  {result.meta.warnings.length > 0 && (
-                    <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg p-4">
-                      <h4 className="font-medium text-yellow-800 dark:text-yellow-200 mb-2 flex items-center gap-2 text-sm">
-                        <FaExclamationTriangle className="text-yellow-600 dark:text-yellow-400" />
-                        Observaciones:
-                      </h4>
-                      <ul className="text-sm text-yellow-700 dark:text-yellow-300 space-y-1">
-                        {result.meta.warnings.map((w, i) => <li key={i}>• {w}</li>)}
-                      </ul>
-                    </div>
-                  )}
+                  {/* Disclaimer legal */}
+                  <div className="mt-6 text-xs text-gray-500 dark:text-gray-400 text-center">
+                    Los datos mostrados son aproximados y no representan valores oficiales ni legales. Para información oficial, consulte a un experto o profesional matriculado.
+                  </div>
 
                   {/* Ver detalles */}
                   <button

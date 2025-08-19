@@ -61,11 +61,8 @@ function getDefaultTaxRules() {
         'Tierra del Fuego': 0.0
       }
     },
-    PAIS: {
-      global: 30.0
-    },
     PERCEPCION_GAN: {
-      global: 35.0
+      global: 30.0
     },
     IIBB: {
       provincias: {
@@ -137,22 +134,6 @@ function calcularIVA(precioBase, provincia, taxRules) {
 }
 
 /**
- * Calcula el Impuesto PAIS
- */
-function calcularPAIS(precioBase, moneda, taxRules) {
-  // Solo se aplica a compras en USD
-  if (moneda === 'ARS') {
-    return { rate: 0, amount: 0 };
-  }
-  
-  const paisRate = taxRules.PAIS.global || 30.0;
-  return {
-    rate: paisRate,
-    amount: (precioBase * paisRate) / 100
-  };
-}
-
-/**
  * Calcula las percepciones a cuenta de Ganancias/Bienes Personales
  */
 function calcularPercepcionGanancias(precioBase, moneda, metodoPago, taxRules) {
@@ -162,7 +143,7 @@ function calcularPercepcionGanancias(precioBase, moneda, metodoPago, taxRules) {
   }
   
   // Excepción para ciertos métodos de pago
-  if (['mercado_pago', 'tarjeta_dolares_cuenta'].includes(metodoPago)) {
+  if (["mercado_pago", "tarjeta_dolares_cuenta", "tarjeta_usd_cuenta"].includes(metodoPago)) {
     return { 
       rate: 0, 
       amount: 0, 
@@ -171,7 +152,7 @@ function calcularPercepcionGanancias(precioBase, moneda, metodoPago, taxRules) {
     };
   }
   
-  const percepcionRate = taxRules.PERCEPCION_GAN.global || 35.0;
+  const percepcionRate = taxRules.PERCEPCION_GAN.global || 30.0;
   return {
     rate: percepcionRate,
     amount: (precioBase * percepcionRate) / 100,
@@ -208,22 +189,51 @@ async function calcularImpuestos(precio, moneda, provincia, metodoPago, categori
     
     // Convertir a ARS si es necesario
     const { precioARS, cotizacion } = await convertirAARS(precio, moneda, metodoPago);
-    
+
+    // Si es cryptomonedas, no aplica ningún impuesto
+    if (metodoPago === 'cryptomonedas') {
+      return {
+        input: {
+          precio: parseFloat(precio),
+          moneda,
+          provincia,
+          metodo_pago: metodoPago,
+          categoria_producto: categoriaProducto
+        },
+        cotizacion: cotizacion ? {
+          tipo: cotizacion.tipo,
+          valor: parseFloat(cotizacion.venta),
+          source: cotizacion.source,
+          fetched_at: cotizacion.fetchedAt,
+          is_stale: cotizacion.isStale
+        } : null,
+        desglose: {
+          precio_base_ars: Math.round(precioARS * 100) / 100,
+          iva: 0,
+          percepcion_ganancias: 0,
+          iibb: 0,
+          total: Math.round(precioARS * 100) / 100
+        },
+        meta: {
+          rules_used: [],
+          warnings: ['No se aplican impuestos para pagos con criptomonedas.']
+        }
+      };
+    }
+
     // Calcular cada impuesto
     const iva = calcularIVA(precioARS, provincia, taxRules);
-    const pais = calcularPAIS(precioARS, moneda, taxRules);
     const percepcionGanancias = calcularPercepcionGanancias(precioARS, moneda, metodoPago, taxRules);
     const iibb = calcularIIBB(precioARS, provincia, taxRules);
     
     // Calcular total
-    const total = precioARS + iva.amount + pais.amount + percepcionGanancias.amount + iibb.amount;
+    const total = precioARS + iva.amount + percepcionGanancias.amount + iibb.amount;
     
     // Preparar reglas usadas y warnings
     const rulesUsed = [];
     const warnings = [];
     
     if (iva.rate > 0) rulesUsed.push(`IVA:${iva.rate}%`);
-    if (pais.rate > 0) rulesUsed.push(`PAIS:${pais.rate}%`);
     if (percepcionGanancias.rate > 0) rulesUsed.push(`PERCEPCION_GAN:${percepcionGanancias.rate}%`);
     if (iibb.rate > 0) rulesUsed.push(`IIBB:${provincia}:${iibb.rate}%`);
     
@@ -254,7 +264,6 @@ async function calcularImpuestos(precio, moneda, provincia, metodoPago, categori
       desglose: {
         precio_base_ars: Math.round(precioARS * 100) / 100,
         iva: Math.round(iva.amount * 100) / 100,
-        pais: Math.round(pais.amount * 100) / 100,
         percepcion_ganancias: Math.round(percepcionGanancias.amount * 100) / 100,
         iibb: Math.round(iibb.amount * 100) / 100,
         total: Math.round(total * 100) / 100
